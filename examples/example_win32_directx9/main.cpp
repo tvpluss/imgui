@@ -254,7 +254,8 @@ int main(int, char**)
         }
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
-            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
+            // TODO: Remove Resizable flags after developments
+            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
             if (ImGui::BeginTable("petropy", 8, flags_petropy)) {
 
@@ -273,37 +274,44 @@ int main(int, char**)
                 ImGui::TableNextRow();
 
                 // Sub-table GAMMA RAY
-                char* contents[6] = { "0", "GR", "150", "0", "CAL", "16" };
+                char* gamma_contents[6] = { "0", "GR", "150", "0", "CAL", "16" };
+                ImVec4 gama_colors[2] = { color_green, color_red };
                 ImGui::TableSetColumnIndex(0);
-                DrawBasicTable("gamma-ray", contents, 2, 3);
+                DrawBasicTable("gamma-ray", gamma_contents, gama_colors, 2, 3);
 
                 // Sub-table Resist
                 char* resist_contents[6] = { "2","RESDEEP", "2000", "2","RESMED", "2000" };
+                ImVec4 resist_colors[2] = { color_black , color_red };
                 ImGui::TableSetColumnIndex(2);
-                DrawBasicTable("resist", resist_contents, 2, 3);
+                DrawBasicTable("resist", resist_contents, resist_colors, 2, 3);
 
                 // Sub-table Neutron
                 char* neutron_contents[9] = { "0.45", "NPHI", "-0.15", "1.95", "RHOB", "2.95", "0", "PE", "10" };
+                ImVec4 neutron_colors[3] = { color_blue, color_red, color_black };
                 ImGui::TableSetColumnIndex(3);
-                DrawBasicTable("neutron", neutron_contents, 3, 3);
+                DrawBasicTable("neutron", neutron_contents, neutron_colors, 3, 3);
 
                 // Sub-table Mineral
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
+                ImVec4 mineral_colors[1] = { color_green };
                 ImGui::TableSetColumnIndex(4);
-                DrawBasicTable("mineral", mineral_contents, 1, 9);
+                DrawBasicTable("mineral", mineral_contents, mineral_colors, 1, 9);
 
                 // Sub-table Porosity
                 char* porosity_contents[3] = { "1", "Sw", "0" };
+                ImVec4 porosity_colors[1] = { color_green };
                 ImGui::TableSetColumnIndex(5);
-                DrawBasicTable("porosity", porosity_contents, 1, 3);
+                DrawBasicTable("porosity", porosity_contents, porosity_colors, 1, 3);
 
                 char* oil_contents[6] = { "0", "OIP", "0.25", "50", "SUM OIP", "0" };
+                ImVec4 oil_colors[2] = { color_green, color_red };
                 ImGui::TableSetColumnIndex(6);
-                DrawBasicTable("oil", oil_contents, 2, 1);
+                DrawBasicTable("oil", oil_contents, oil_colors, 2, 1);
 
                 char* electro_contents[2] = { "0", "1" };
+                ImVec4 electro_colors[1] = { color_green };
                 ImGui::TableSetColumnIndex(7);
-                DrawBasicTable("electro", electro_contents, 1, 2);
+                DrawBasicTable("electro", electro_contents, electro_colors, 1, 2);
 
 
                 //Gamma Row
