@@ -1,4 +1,4 @@
-// Dear ImGui: standalone example application for DirectX 9
+﻿// Dear ImGui: standalone example application for DirectX 9
 // If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
@@ -8,6 +8,7 @@
 #include <d3d9.h>
 #include <tchar.h>
 #include "implot.h"
+#include <imgui_internal.h>
 // Data
 static LPDIRECT3D9              g_pD3D = NULL;
 static LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
@@ -50,13 +51,30 @@ void DrawBasicTable(char* label, char* contents[], int row, int col) {
     }
 };
 
+void SetUpData(double * x, double* y, double y_increasement,int data_count, double x_min, double x_max) {
+    
+    for (int j = 0; j < data_count; j++) {
+        x[j] = RandomRange(x_min, x_max);
+        y[j] = j * y_increasement;
+    }
+}
+
+void SetUpData(double* x, double* y, double y_increasement, double* x_min, int data_count, double x_max) {
+
+    for (int j = 0; j < data_count; j++) {
+        x[j] = RandomRange(x_min[j], x_max);
+        y[j] = j * y_increasement;
+    }
+}
 int main(int, char**)
 {
+    RECT desktop;
+    GetWindowRect(GetDesktopWindow(), &desktop);
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui Example", NULL };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX9 Example", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, NULL, NULL, wc.hInstance, NULL);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX9 Example", WS_OVERLAPPEDWINDOW, desktop.right / 2, desktop.top, desktop.right / 2, desktop.bottom - 100, NULL, NULL, wc.hInstance, NULL);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -150,6 +168,31 @@ int main(int, char**)
 
     }
 
+    float root = 0;
+    float y_increasement = 1;
+    float max_y_axis = rand_data_count * y_increasement;
+
+    static double data_col5_x[6][rand_data_count];
+    static double data_col5_y[6][rand_data_count];
+    for(int i = 0; i < 6; i++){
+        SetUpData(data_col5_x[i], data_col5_y[i], y_increasement, rand_data_count,2400- 400*(i+1),2400- 400*i);
+    }
+    static double data_col6_x[3][rand_data_count];
+    static double data_col6_y[3][rand_data_count];
+    SetUpData(data_col6_x[0], data_col6_y[0], y_increasement, rand_data_count, 0, 1000);
+    SetUpData(data_col6_x[1], data_col6_y[1], y_increasement, data_col6_x[0], rand_data_count, 2000);
+    SetUpData(data_col6_x[2], data_col6_y[2], y_increasement, rand_data_count, 0, 2000);
+    static double data_col7_x[2][rand_data_count];
+    static double data_col7_y[2][rand_data_count];
+    SetUpData(data_col7_x[0], data_col7_y[0], y_increasement, rand_data_count, 0, 2000);
+    SetUpData(data_col7_x[1], data_col7_y[1], y_increasement, rand_data_count,0,2000);
+    bool show1st = true;
+    bool show2nd = true;
+    bool show3rd = true;
+    bool show4th = true;
+    bool show5th = true;
+    bool show6th = true;
+
     static double neutron_y[rand_data_count];
     static double neutron_nphi[rand_data_count];
     static double neutron_rhob[rand_data_count];
@@ -196,7 +239,8 @@ int main(int, char**)
         {
             static float f = 0.0f;
             static int counter = 0;
-
+            
+            ImGui::SetNextWindowPos(ImVec2(100, 100));
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
@@ -204,8 +248,8 @@ int main(int, char**)
             ImGui::Checkbox("Implot Demo", &show_implot_demo_window);
             ImGui::Checkbox("Another Window", &show_another_window);
             ImGui::Checkbox("My first Window", &my_tool_active);
-            ImGui::Checkbox("Appeal Application Form", &my_form);
             ImGui::Checkbox("Demo Table", &my_table);
+
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -219,14 +263,9 @@ int main(int, char**)
         }
 
         // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+        const ImGuiViewport* vp = ImGui::GetMainViewport();
+        ImGui::SetNextWindowSize(vp->WorkSize);
+        ImGui::SetNextWindowPos(vp->WorkPos);
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
             static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
@@ -266,7 +305,6 @@ int main(int, char**)
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImGui::TableSetColumnIndex(4);
                 DrawBasicTable("mineral", mineral_contents, 1, 9);
-
                 // Sub-table Porosity
                 char* porosity_contents[3] = { "1", "Sw", "0" };
                 ImGui::TableSetColumnIndex(5);
@@ -297,6 +335,7 @@ int main(int, char**)
                     ImPlot::SetNextLineStyle(color);
                     ImPlot::PlotLine("##Test1", x1, y1, rand_data_count);
                     ImPlot::PopStyleVar();
+
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
@@ -318,6 +357,7 @@ int main(int, char**)
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
                 if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0,0))) {
                     // Set opactity of shade to 25%
+
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                     ImPlot::PlotShaded("##Test_Depth", resist_x, resist_y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
@@ -325,6 +365,29 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
+                
+                ImGui::TableSetColumnIndex(4);
+                ImGui::Checkbox("show1st", &show1st);      // Edit bools storing our window open/close state
+                ImGui::SameLine();
+                ImGui::Checkbox("show2nd", &show2nd);
+                ImGui::SameLine();
+                ImGui::Checkbox("show3rd", &show3rd);
+                ImGui::Checkbox("show4th", &show4th);
+                ImGui::SameLine();
+                ImGui::Checkbox("show5th", &show5th);
+                ImGui::SameLine();
+
+                ImGui::Checkbox("show6th", &show6th);
+                if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(-1, -1))) {
+                    // Set opactity of shade to 25%
+                   
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels|ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxesLimits(0, 2800, 0 , rand_data_count);
+                    if(show1st){
+                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 1.000f, 0.584f, 1.000f));
+                        ImPlot::PlotShaded("##Test_Depth1", data_col5_x[0], data_col5_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    }
                 ImPlot::PopStyleVar(2);
 
                 //Neutron Row
@@ -354,84 +417,146 @@ int main(int, char**)
             //            
             //            ImPlot::PlotLine(id, x, y, rand_data_count);
 
-            //            ImPlot::EndPlot();
-            //        }
-            //    }
-            //    ImPlot::EndSubplots();
-            //}
-            ImGui::End();
-        }
-        if (my_form) {
-            ImGui::Begin("Appeal Application Form", &my_form);
+                    if (show2nd) {
+                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 0.800f, 0.800f, 1.000f));
 
-            ImGui::PushFont(font_h0);
-            ImGui::Text("Appeal Application Form");
-            ImGui::PopFont(); ImGui::PushFont(font_h1);
-            ImGui::Text("Personal Information");
+                        ImPlot::PlotShaded("##Test_Depth3", data_col5_x[1], data_col5_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    }
+                    if (show3rd) {
+                        ImPlot::SetNextFillStyle(ImVec4(0.200f, 0.200f, 1.000f, 1.000f));
 
-            ImGui::PushFont(font_h2);
-            ImGui::Text("Name");
+                        ImPlot::PlotShaded("##Test_Depth4", data_col5_x[2], data_col5_y[2], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    }
+                    if (show4th) {
+                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 0.800f, 0.200f, 1.000f));
 
-            ImGui::PushFont(font_text);
-            if (ImGui::BeginTable("table1", 2)) {
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::PushItemWidth(-1);
-                static char buf1[64] = ""; ImGui::InputTextWithHint("##First", "First", buf1, 64);
-                ImGui::PopItemWidth();
-                ImGui::TableSetColumnIndex(1);
-                ImGui::PushItemWidth(-1);
-                static char buf2[64] = ""; ImGui::InputTextWithHint("##Last", "Last", buf2, 64);
-                ImGui::PopItemWidth();
+                        ImPlot::PlotShaded("##Test_Depth5", data_col5_x[3], data_col5_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    }
+                    if (show5th) {
+                        ImPlot::SetNextFillStyle(ImVec4(0.200f, 0.200f, 0.200f, 1.000f));
+
+                        ImPlot::PlotShaded("##Test_Depth6", data_col5_x[4], data_col5_y[4], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    }
+                    ImPlot::PopStyleVar();
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
+                    ImPlot::SetNextFillStyle(ImVec4(0.624f, 0.624f, 0.549f, 1.000f));
+                    ImPlot::PlotShaded("##VClay", data_col5_x[0], data_col5_y[0], rand_data_count, 2800, ImPlotShadedFlags_Vertical);
+                    
+
+                    ImPlot::PopStyleVar();
+                    ImPlot::EndPlot();
+                }
+
+                ImGui::TableSetColumnIndex(5);
+                
+
+                if (ImGui::BeginTable("petropy", 2, flags_petropy)) {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    // bảng này bên trái 
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION", ImVec2(-1, -1))) {
+                        // Set opactity of shade to 25%
+
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
+                        ImPlot::PlotShaded("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        ImPlot::PlotLine("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count);
+                        ImPlot::PopStyleVar();
+
+                        //line bên trên, đổi màu sang green
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
+
+                        ImVec4 fill_color = { 0.247f, 0.624f, 0.173f, 1.000f};
+                        ImPlot::SetNextFillStyle(fill_color);
+                        ImPlot::PlotShaded("##plot5_2", data_col6_x[1], data_col6_y[1], data_col6_x[0], rand_data_count, ImPlotShadedFlags_Vertical);
+                        ImPlot::PlotLine("##plot5_2", data_col6_x[1], data_col6_y[1], rand_data_count);
+
+                        ImPlot::PopStyleVar();
+                        ImPlot::EndPlot();
+                    }
+                    ImGui::TableSetColumnIndex(1);
+                    // bảng này bên phải
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(-1, -1))) {
+                        // Set opactity of shade to 25%
+
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
+                        ImPlot::PlotShaded("##plot5_3", data_col6_x[2], data_col6_y[2], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        ImPlot::PlotLine("##plot5_3", data_col6_x[2], data_col6_y[2], rand_data_count);
+
+                        ImPlot::PopStyleVar();
+                        ImPlot::EndPlot();
+                    }
+                    ImGui::EndTable();
+                }
+                ImGui::TableSetColumnIndex(6);
+                if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(-1, -1))) {
+                    // Set opactity of shade to 25%
+
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert| ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+                    ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
+                    ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
+                    ImPlot::SetNextLineStyle(line_color);
+                    ImPlot::PlotLine("##line1", data_col7_x[0], data_col7_y[0], rand_data_count);
+
+                    ImVec4 fill_color = { 0.000f, 0.102f, 0.000f, 1.000f };
+                    ImPlot::SetNextFillStyle(fill_color);
+                    ImPlot::PlotShaded("##filled1", data_col7_x[0], data_col7_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+
+                    ImPlot::SetAxes(ImAxis_X2, ImAxis_Y1);
+
+
+                    // cái này là bên trái 
+                    line_color = { 0.000f, 0.392f, 0.000f, 1.000f };
+                    
+                    ImPlot::SetNextLineStyle(line_color);
+                    ImPlot::PlotLine("##filled2", data_col7_x[1], data_col7_y[1], rand_data_count);
+
+                    fill_color = { 0.000f, 0.392f, 0.000f, 1.000f };
+                    ImPlot::SetNextFillStyle(fill_color);
+                    ImPlot::PlotShaded("##line2", data_col7_x[1], data_col7_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    ImPlot::PopStyleVar();
+                    ImPlot::EndPlot();
+                }
+                ImGui::TableSetColumnIndex(7);
+                if (ImPlot::BeginPlot("##ELECTROFACIES", ImVec2(-1, -1))) {
+                    // Set opactity of shade to 25%
+
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+                    ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
+                    ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
+                    ImPlot::SetNextLineStyle(line_color);
+                    ImPlot::PlotLine("##line1", data_col7_x[0], data_col7_y[0], rand_data_count);
+
+                    ImVec4 fill_color = { 0.000f, 0.102f, 0.000f, 1.000f };
+                    ImPlot::SetNextFillStyle(fill_color);
+                    ImPlot::PlotShaded("##filled1", data_col7_x[0], data_col7_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+
+                    ImPlot::SetAxes(ImAxis_X2, ImAxis_Y1);
+
+
+                    // cái này là bên trái 
+                    line_color = { 0.000f, 0.392f, 0.000f, 1.000f };
+
+                    ImPlot::SetNextLineStyle(line_color);
+                    ImPlot::PlotLine("##filled2", data_col7_x[1], data_col7_y[1], rand_data_count);
+
+                    fill_color = { 0.000f, 0.392f, 0.000f, 1.000f };
+                    ImPlot::SetNextFillStyle(fill_color);
+                    ImPlot::PlotShaded("##line2", data_col7_x[1], data_col7_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    ImPlot::PopStyleVar();
+                    ImPlot::EndPlot();
+                }
                 ImGui::EndTable();
             }
-
-
-            ImGui::PopFont();
-
-            ImGui::Text("Student Number");
-
-            ImGui::PushFont(font_text);
-            ImGui::PushItemWidth(-1);
-            static char buf3[64] = ""; ImGui::InputText("##Number", buf3, 64, ImGuiInputTextFlags_CharsDecimal);
-            ImGui::PopItemWidth();
-            ImGui::PopFont();
-
-            ImGui::PopFont();
-
-            ImGui::Text("Appeal Information");
-
-            ImGui::PushFont(font_h2);
-            ImGui::Text("Request Summary");
-
-            ImGui::PushFont(font_text);
-            static char text[1024 * 16] = "";
-            ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text), ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 4));
-            ImGui::PopFont();
-
-            ImGui::Text("Letter of Appeal Upload");
-
-            ImGui::PushFont(font_text);
-            ImGui::PushItemWidth(-1);
-            static char upload[64] = "Choose File or Upload"; ImGui::InputText("##Upload", upload, 64);
-            ImGui::PopItemWidth();
-            ImGui::PopFont();
-
-            ImGui::Text("Do you have supporting documents");
-            ImGui::PushFont(font_text);
-            static int item_current_2 = 0;
-            ImGui::PushItemWidth(-1);
-            ImGui::Combo("##combo", &item_current_2, "Yes\0No\0\0");
-            ImGui::PopItemWidth();
-            ImGui::PopFont();
-
-            ImGui::PopFont();
-
-            ImGui::PopFont();
+           
             ImGui::End();
-
-
         }
+        
         // Rendering
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);

@@ -1790,9 +1790,17 @@ void PlotShaded(const char* label_id, const T* xs, const T* ys, int count, doubl
 
 template <typename T>
 void PlotShaded(const char* label_id, const T* xs, const T* ys1, const T* ys2, int count, ImPlotShadedFlags flags, int offset, int stride) {
-    GetterXY<IndexerIdx<T>,IndexerIdx<T>> getter1(IndexerIdx<T>(xs,count,offset,stride),IndexerIdx<T>(ys1,count,offset,stride),count);
-    GetterXY<IndexerIdx<T>,IndexerIdx<T>> getter2(IndexerIdx<T>(xs,count,offset,stride),IndexerIdx<T>(ys2,count,offset,stride),count);
-    PlotShadedEx(label_id, getter1, getter2, flags);
+    if (ImHasFlag(flags, ImPlotShadedFlags_Vertical)) {
+
+        GetterXY<IndexerIdx<T>, IndexerIdx<T>> getter1(IndexerIdx<T>(xs, count, offset, stride), IndexerIdx<T>(ys1, count, offset, stride), count);
+        GetterXY<IndexerIdx<T>, IndexerIdx<T>> getter2(IndexerIdx<T>(ys2, count, offset, stride), IndexerIdx<T>(ys1, count, offset, stride), count);
+        PlotShadedEx(label_id, getter1, getter2, flags);
+
+    }else{
+        GetterXY<IndexerIdx<T>,IndexerIdx<T>> getter1(IndexerIdx<T>(xs,count,offset,stride),IndexerIdx<T>(ys1,count,offset,stride),count);
+        GetterXY<IndexerIdx<T>,IndexerIdx<T>> getter2(IndexerIdx<T>(xs,count,offset,stride),IndexerIdx<T>(ys2,count,offset,stride),count);
+        PlotShadedEx(label_id, getter1, getter2, flags);
+    }
 }
 
 #define INSTANTIATE_MACRO(T) \
