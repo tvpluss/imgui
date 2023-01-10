@@ -131,7 +131,7 @@ int main(int, char**)
         else {
             x[j] = RandomRange(70, 80);
             y[j] = 1;
-    }
+        }
     }
     static double x1[rand_data_count];
     static double y1[rand_data_count];
@@ -180,7 +180,7 @@ int main(int, char**)
             neutron_nphi[j] = neutron_pe[j] + RandomRange(-5, 5);
             neutron_rhob[j] = neutron_pe[j] + RandomRange(1.95, 2.95);
             neutron_y[j] = 1;
-    }
+        }
     }
 
 
