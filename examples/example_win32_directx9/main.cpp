@@ -125,7 +125,7 @@ int main(int, char**)
     for (int j = 0; j < rand_data_count; j++) {
         x[j] = RandomRange(60, 150);
         if (j > 0)
-            y[j] = y[j - 1] + RandomRange(0, 1);
+            y[j] = y[j - 1] + 1;
         else
             y[j] = 1;
     }
@@ -134,7 +134,7 @@ int main(int, char**)
     for (int j = 0; j < rand_data_count; j++) {
         x1[j] = RandomRange(75, 16 + 75);
         if (j > 0)
-            y1[j] = y1[j - 1] + RandomRange(0, 1);
+            y1[j] = y1[j - 1] + 1;
         else
             y1[j] = 1;
 
@@ -144,9 +144,24 @@ int main(int, char**)
     for (int j = 0; j < rand_data_count; j++) {
         resist_x[j] = RandomRange(2, 2000);
         if (j > 0)
-            resist_y[j] = resist_y[j - 1] + RandomRange(0, 1);
+            resist_y[j] = resist_y[j - 1] + 1;
         else
             resist_y[j] = 1;
+
+    }
+
+    static double neutron_y[rand_data_count];
+    static double neutron_nphi[rand_data_count];
+    static double neutron_rhob[rand_data_count];
+    static double neutron_pe[rand_data_count];
+    for (int j = 0; j < rand_data_count; j++) {
+        neutron_nphi[j] = RandomRange(0.45, -0.15);
+        neutron_rhob[j] = RandomRange(1.95, 2.95);
+        neutron_pe[j] = RandomRange(0, 10);
+        if (j > 0)
+            neutron_y[j] = neutron_y[j - 1] + 1;
+        else
+            neutron_y[j] = 1;
 
     }
     // Main loop
@@ -214,7 +229,7 @@ int main(int, char**)
         }
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
-            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit;
+            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
             if (ImGui::BeginTable("petropy", 8, flags_petropy)) {
 
@@ -263,16 +278,18 @@ int main(int, char**)
 
                 char* electro_contents[2] = { "0", "1" };
                 ImGui::TableSetColumnIndex(7);
-                DrawBasicTable("electro", electro_contents, 2, 1);
+                DrawBasicTable("electro", electro_contents, 1, 2);
 
 
-                //Graph Row
+                //Gamma Row
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                if (ImPlot::BeginPlot("##Test", ImVec2(-1, -1))) {
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
+                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0,0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations| ImPlotAxisFlags_AutoFit);
                     ImVec4 color = { 0.5f, 0.3f, 0.4f, 0.9f };
                     ImPlot::PlotShaded("##Test", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
                     ImPlot::SetNextLineStyle(color);
@@ -282,13 +299,14 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
+                ImPlot::PopStyleVar(2);
 
                 //Depth Row
                 ImGui::TableSetColumnIndex(1);
                 int depth_start = 7050;
                 char buffer[6];
                 for (int i = 0; i < 20; i++) {
-
+                    ImGui::Dummy(ImVec2(0.0f, 20.0f));
                     ImGui::Text(itoa(depth_start, buffer, 10));
                     depth_start += 50;
 
@@ -296,15 +314,36 @@ int main(int, char**)
 
                 //Resist Row
                 ImGui::TableSetColumnIndex(2);
-                if (ImPlot::BeginPlot("##Test_Depth", ImVec2(-1, -1))) {
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
+                if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0,0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                     ImPlot::PlotShaded("##Test_Depth", resist_x, resist_y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
                     ImPlot::PlotLine("##Test_Depth", resist_x, resist_y, rand_data_count);
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
+                ImPlot::PopStyleVar(2);
+
+                //Neutron Row
+                ImGui::TableSetColumnIndex(3);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
+                if (ImPlot::BeginPlot("##Neutron_Plot", ImVec2(0, 0))) {
+                    // Set opactity of shade to 25%
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::PlotLine("##Neutron_nphi", neutron_nphi, neutron_y, rand_data_count);
+                    ImPlot::PlotLine("##Neutron_rhob", neutron_rhob, neutron_y, rand_data_count);
+                    ImPlot::PlotLine("##Neutron_pe", neutron_pe, neutron_y, rand_data_count);
+                    ImPlot::PopStyleVar();
+                    ImPlot::EndPlot();
+                }
+                ImPlot::PopStyleVar(2);
+
+
                 ImGui::EndTable();
             }
             //if (ImPlot::BeginSubplots("My Subplot", 1, 2, ImVec2(800, 400))) {
