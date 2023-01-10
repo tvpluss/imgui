@@ -31,7 +31,7 @@ void TextCentered(char* text) {
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (windowWidth - textWidth) * 0.5f);
     ImGui::Text(text);
 }
-void DrawBasicTable(char* label, char* contents[], int row, int col) {
+void DrawBasicTable(char* label, char* contents[], ImVec4 colors[], int row, int col) {
     if (ImGui::BeginTable(label, col)) {
 
         for (int i = 0; i < row; i++) {
@@ -39,10 +39,9 @@ void DrawBasicTable(char* label, char* contents[], int row, int col) {
             for (int j = 0; j < col; j++) {
                 ImGui::TableSetColumnIndex(j);
                 ImGui::PushItemWidth(-FLT_MIN);
-                //ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(contents[i * col + j]).x
-                //    - ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x);
-                //ImGui::Text(contents[i * col + j]);
+                ImGui::PushStyleColor(ImGuiCol_Text, colors[i]);
                 TextCentered(contents[i * col + j]);
+                ImGui::PopStyleColor();
                 ImGui::PopItemWidth();
             }
         }
