@@ -313,85 +313,77 @@ int main(int, char**)
                 ImGui::TableSetColumnIndex(7);
                 DrawBasicTable("electro", electro_contents, electro_colors, 1, 2);
 
+                //-----------------------------------------------------
+                // GRAPH ROW
+                //-----------------------------------------------------
 
-                //Gamma Row
+
+                //Gamma
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
-                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0,0))) {
+                if (ImPlot::BeginPlot("##Test", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations| ImPlotAxisFlags_AutoFit);
-                    ImVec4 color = { 0.5f, 0.3f, 0.4f, 0.9f };
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                     ImPlot::PlotShaded("##Test", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    ImPlot::SetNextLineStyle(color);
+                    ImPlot::SetNextLineStyle(color_green);
                     ImPlot::PlotLine("##Test", x, y, rand_data_count);
-                    ImPlot::SetNextLineStyle(color);
+                    ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Test1", x1, y1, rand_data_count);
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
 
-                //Depth Row
+                //Depth
                 ImGui::TableSetColumnIndex(1);
                 int depth_start = 7050;
                 char buffer[6];
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < 30; i++) {
                     ImGui::Dummy(ImVec2(0.0f, 20.0f));
                     ImGui::Text(itoa(depth_start, buffer, 10));
                     depth_start += 50;
 
                 }
 
-                //Resist Row
+                //Resist
                 ImGui::TableSetColumnIndex(2);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
-                if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0,0))) {
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
+                if (ImPlot::BeginPlot("##Test_Depth", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
-                    ImPlot::PlotShaded("##Test_Depth", resist_x, resist_y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    ImPlot::PlotLine("##Test_Depth", resist_x, resist_y, rand_data_count);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::PlotShaded("##Resist_resmed", resist_resmed, resist_y, rand_data_count, 1200, ImPlotShadedFlags_Vertical);
+                    ImPlot::SetNextLineStyle(color_red);
+                    ImPlot::PlotLine("##Resist_resmed", resist_resmed, resist_y, rand_data_count);
+                    ImPlot::SetNextLineStyle(color_black);
+                    ImPlot::PlotLine("##Resist_resdeep", resist_resdeep, resist_y, rand_data_count);
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
 
-                //Neutron Row
+                //Neutron
                 ImGui::TableSetColumnIndex(3);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
-                if (ImPlot::BeginPlot("##Neutron_Plot", ImVec2(0, 0))) {
-                    // Set opactity of shade to 25%
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
+                if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(0, 0))) {
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetNextLineStyle(color_blue);
                     ImPlot::PlotLine("##Neutron_nphi", neutron_nphi, neutron_y, rand_data_count);
+                    ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Neutron_rhob", neutron_rhob, neutron_y, rand_data_count);
+                    ImPlot::SetNextLineStyle(color_black);
                     ImPlot::PlotLine("##Neutron_pe", neutron_pe, neutron_y, rand_data_count);
-                    ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
-
-
                 ImGui::EndTable();
             }
-            //if (ImPlot::BeginSubplots("My Subplot", 1, 2, ImVec2(800, 400))) {
-            //    for (int i = 0; i < 2; ++i) {
-            //        char id[5] = "##id";
-            //        id[4] = (char)i;
-            //        if (ImPlot::BeginPlot(id)) {
-            //            
-            //            ImPlot::PlotLine(id, x, y, rand_data_count);
 
-            //            ImPlot::EndPlot();
-            //        }
-            //    }
-            //    ImPlot::EndSubplots();
-            //}
             ImGui::End();
         }
         if (my_form) {
