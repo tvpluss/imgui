@@ -228,7 +228,7 @@ int main(int, char**)
 
     static double data_col5_x[6][rand_data_count];
     static double data_col5_y[6][rand_data_count];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 5; i >=0; i++) {
         SetUpData(data_col5_x[i], data_col5_y[i], y_increasement, rand_data_count, 2400 - 400 * (i + 1), 2400 - 400 * i);
     }
     static double data_col6_x[4][rand_data_count];
@@ -414,7 +414,7 @@ int main(int, char**)
                     ImPlot::SetupAxesLimits(0, 150, 0, 30);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
                     for (int i = 0; i < 9; i++) {
-                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 15.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 1.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
                     }
                     ImPlot::EndPlot();
                 }
