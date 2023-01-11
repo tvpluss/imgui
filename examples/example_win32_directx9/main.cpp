@@ -347,8 +347,18 @@ int main(int, char**)
                 // Sub-table Mineral
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImVec4 mineral_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(4);
-                DrawBasicTable("mineral", mineral_contents, mineral_colors, 1, 9);
+                ImGui::TableSetColumnIndex(6);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(500, 60));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(500, 60));
+                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0))) {
+                    ImPlot::SetupAxesLimits(0, 150, 0, 30);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
+                    for (int i = 0; i < 9; i++) {
+                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 15.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                    }
+                    ImPlot::EndPlot();
+                }
+                // DrawBasicTable("mineral", mineral_contents, mineral_colors, 1, 9);
 
                 // Sub-table Porosity
                 char* porosity_contents[3] = { "1", "Sw", "0" };
