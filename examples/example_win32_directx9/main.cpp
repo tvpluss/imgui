@@ -414,7 +414,9 @@ int main(int, char**)
                     ImPlot::SetupAxesLimits(0, 150, 0, 30);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
                     for (int i = 0; i < 9; i++) {
-                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 1.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PushStyleColor(ImPlotCol_InlayText,minaralogoy_color[i]);
+                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 15.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PopStyleColor();
                     }
                     ImPlot::EndPlot();
                 }
