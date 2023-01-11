@@ -303,39 +303,45 @@ int main(int, char**)
             ImGui::Begin("My Table", &my_table);
             // TODO: Remove Resizable flags after developments
             static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
+            // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
-            if (ImGui::BeginTable("petropy", 8, flags_petropy)) {
+            if (ImGui::BeginTable("petropy", 10, flags_petropy)) {
 
                 // Header Row
                 //ImGui::TableSetupScrollFreeze(0, 1);
+                ImGui::TableSetupColumn("##VERTICAL-TEXT", column_flags );
                 ImGui::TableSetupColumn("GAMMA RAY", column_flags);
                 ImGui::TableSetupColumn("DEPTH", column_flags);
                 ImGui::TableSetupColumn("RESISTIVITY", column_flags);
                 ImGui::TableSetupColumn("NEUTRON DENSITY", column_flags);
+                ImGui::TableSetupColumn("##TOC", column_flags);
                 ImGui::TableSetupColumn("MINERALOGOY", column_flags);
                 ImGui::TableSetupColumn("POROSITY SATURATION", column_flags);
                 ImGui::TableSetupColumn("OIL IN PLACE ", column_flags);
                 ImGui::TableSetupColumn("ELECTROFACIES", column_flags);
                 ImGui::TableHeadersRow();
+
+                // ---------------------------------------
                 // Legend Row
+                // ----------------------------------------
                 ImGui::TableNextRow();
 
                 // Sub-table GAMMA RAY
                 char* gamma_contents[6] = { "0", "GR", "150", "0", "CAL", "16" };
                 ImVec4 gama_colors[2] = { color_green, color_red };
-                ImGui::TableSetColumnIndex(0);
+                ImGui::TableSetColumnIndex(1);
                 DrawBasicTable("gamma-ray", gamma_contents, gama_colors, 2, 3);
 
                 // Sub-table Resist
                 char* resist_contents[6] = { "2","RESDEEP", "2000", "2","RESMED", "2000" };
                 ImVec4 resist_colors[2] = { color_black , color_red };
-                ImGui::TableSetColumnIndex(2);
+                ImGui::TableSetColumnIndex(3);
                 DrawBasicTable("resist", resist_contents, resist_colors, 2, 3);
 
                 // Sub-table Neutron
                 char* neutron_contents[9] = { "0.45", "NPHI", "-0.15", "1.95", "RHOB", "2.95", "0", "PE", "10" };
                 ImVec4 neutron_colors[3] = { color_blue, color_red, color_black };
-                ImGui::TableSetColumnIndex(3);
+                ImGui::TableSetColumnIndex(4);
                 DrawBasicTable("neutron", neutron_contents, neutron_colors, 3, 3);
 
                 // Sub-table Mineral
@@ -347,17 +353,19 @@ int main(int, char**)
                 // Sub-table Porosity
                 char* porosity_contents[3] = { "1", "Sw", "0" };
                 ImVec4 porosity_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(5);
+                ImGui::TableSetColumnIndex(7);
                 DrawBasicTable("porosity", porosity_contents, porosity_colors, 1, 3);
 
+                // Sub-table oil
                 char* oil_contents[6] = { "0", "OIP", "0.25", "50", "SUM OIP", "0" };
                 ImVec4 oil_colors[2] = { color_green, color_red };
-                ImGui::TableSetColumnIndex(6);
+                ImGui::TableSetColumnIndex(8);
                 DrawBasicTable("oil", oil_contents, oil_colors, 2, 1);
 
+                // Sub-table electro
                 char* electro_contents[2] = { "0", "1" };
                 ImVec4 electro_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(7);
+                ImGui::TableSetColumnIndex(9);
                 DrawBasicTable("electro", electro_contents, electro_colors, 1, 2);
 
                 //-----------------------------------------------------
@@ -366,10 +374,9 @@ int main(int, char**)
 
 
                 //Gamma
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
+                ImGui::TableSetColumnIndex(1);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
@@ -386,20 +393,20 @@ int main(int, char**)
                 ImPlot::PopStyleVar(2);
 
                 //Depth
-                ImGui::TableSetColumnIndex(1);
+                ImGui::TableSetColumnIndex(2);
                 int depth_start = 7050;
                 char buffer[6];
                 for (int i = 0; i < 30; i++) {
-                    ImGui::Dummy(ImVec2(0.0f, 20.0f));
                     ImGui::Text(itoa(depth_start, buffer, 10));
+                    ImGui::Dummy(ImVec2(0.0f, 12.0f));
                     depth_start += 50;
 
                 }
 
                 //Resist
-                ImGui::TableSetColumnIndex(2);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
+                ImGui::TableSetColumnIndex(3);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
 
@@ -416,9 +423,9 @@ int main(int, char**)
                 ImPlot::PopStyleVar(2);
 
                 //Neutron
-                ImGui::TableSetColumnIndex(3);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(300, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(300, 1000));
+                ImGui::TableSetColumnIndex(4);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(0, 0))) {
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                     ImPlot::SetNextLineStyle(color_blue);
@@ -431,7 +438,8 @@ int main(int, char**)
                 }
 
                 ImPlot::PopStyleVar(2);
-                ImGui::TableSetColumnIndex(4);
+                //Mineral
+                ImGui::TableSetColumnIndex(6);
                 ImGui::Checkbox("show1st", &show1st);      // Edit bools storing our window open/close state
                 ImGui::SameLine();
                 ImGui::Checkbox("show2nd", &show2nd);
@@ -479,7 +487,8 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
 
-                ImGui::TableSetColumnIndex(5);
+                //Porosity
+                ImGui::TableSetColumnIndex(7);
                 if (ImGui::BeginTable("POROSITY SATURATION", 2, flags_petropy, ImVec2(-1, -1))) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -521,7 +530,9 @@ int main(int, char**)
                     }
                     ImGui::EndTable();
                 }
-                ImGui::TableSetColumnIndex(6);
+
+                //Oil in place
+                ImGui::TableSetColumnIndex(8);
                 if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(-1, -1))) {
                     // Set opactity of shade to 25%
 
@@ -554,11 +565,9 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
                 
-                ImGui::TableSetColumnIndex(7);
-                
-                
+                //Electrofacies
 
-
+                ImGui::TableSetColumnIndex(9);
                 static ImPlotColormap map = ImPlotColormap_Viridis;
                 if (ImPlot::ColormapButton(ImPlot::GetColormapName(map), ImVec2(225, 0), map)) {
                     map = (map + 1) % ImPlot::GetColormapCount();
