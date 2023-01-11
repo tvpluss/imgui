@@ -135,7 +135,7 @@ int main(int, char**)
     bool show_implot_demo_window = false;
     bool my_form = false;
     bool my_table = true;
-    const int rand_data_count = 200;
+    const int rand_data_count = 400;
     ImVec4 clear_color = ImVec4(0.25f, 0.35f, 0.00f, 1.00f);
 
     static double x[rand_data_count];
@@ -177,15 +177,23 @@ int main(int, char**)
     for (int i = 0; i < 6; i++) {
         SetUpData(data_col5_x[i], data_col5_y[i], y_increasement, rand_data_count, 2400 - 400 * (i + 1), 2400 - 400 * i);
     }
-    static double data_col6_x[3][rand_data_count];
-    static double data_col6_y[3][rand_data_count];
-    SetUpData(data_col6_x[0], data_col6_y[0], y_increasement, rand_data_count, 0, 1000);
-    SetUpData(data_col6_x[1], data_col6_y[1], y_increasement, data_col6_x[0], rand_data_count, 2000);
-    SetUpData(data_col6_x[2], data_col6_y[2], y_increasement, rand_data_count, 0, 2000);
+    static double data_col6_x[4][rand_data_count];
+    static double data_col6_y[4][rand_data_count];
+    SetUpData(data_col6_x[0], data_col6_y[0], y_increasement, rand_data_count, 0, 500);
+    SetUpData(data_col6_x[1], data_col6_y[1], y_increasement, data_col6_x[0], rand_data_count, 500);
+    SetUpData(data_col6_x[2], data_col6_y[2], y_increasement, data_col6_x[1], rand_data_count, 700);
+    SetUpData(data_col6_x[3], data_col6_y[3], y_increasement, rand_data_count, 0, 1000);
     static double data_col7_x[2][rand_data_count];
     static double data_col7_y[2][rand_data_count];
-    SetUpData(data_col7_x[0], data_col7_y[0], y_increasement, rand_data_count, 0, 2000);
-    SetUpData(data_col7_x[1], data_col7_y[1], y_increasement, rand_data_count, 0, 2000);
+    SetUpData(data_col7_x[0], data_col7_y[0], y_increasement, rand_data_count, 0, 1600);
+    SetUpData(data_col7_x[1], data_col7_y[1], y_increasement, rand_data_count, 0, 1600);
+
+    static float scale_min = 0;
+    static float scale_max = 23.3f;
+    static float values1[rand_data_count];
+    for (int i = 0; i < rand_data_count; i++) {
+        values1[i] = RandomRange(scale_min, scale_max);
+    }
     bool show1st = true;
     bool show2nd = true;
     bool show3rd = true;
@@ -240,7 +248,7 @@ int main(int, char**)
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::SetNextWindowPos(ImVec2(100, 100));
+            ImGui::SetNextWindowPos(ImVec2(0, 20));
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
@@ -431,26 +439,28 @@ int main(int, char**)
                 }
 
                 ImGui::TableSetColumnIndex(5);
-                if (ImGui::BeginTable("petropy", 2, flags_petropy)) {
+                if (ImGui::BeginTable("POROSITY SATURATION", 2, flags_petropy, ImVec2(-1, -1))) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     // bảng này bên trái 
-                    if (ImPlot::BeginPlot("##POROSITY SATURATION", ImVec2(-1, -1))) {
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(-1, -1))) {
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert| ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations);
+                        ImPlot::SetupAxisLimits(ImAxis_X1,0, 1500);
                         ImPlot::PlotShaded("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                        ImPlot::PlotLine("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count);
                         ImPlot::PopStyleVar();
-
-                        //line bên trên, đổi màu sang green
-                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
-
-                        ImVec4 fill_color = { 0.247f, 0.624f, 0.173f, 1.000f };
+                        // hard blue shade
+                        ImVec4 fill_color = { 0.179f, 0.248f, 0.961f, 1.000f};
                         ImPlot::SetNextFillStyle(fill_color);
                         ImPlot::PlotShaded("##plot5_2", data_col6_x[1], data_col6_y[1], data_col6_x[0], rand_data_count, ImPlotShadedFlags_Vertical);
-                        ImPlot::PlotLine("##plot5_2", data_col6_x[1], data_col6_y[1], rand_data_count);
+
+                        //green shade
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
+                        fill_color = { 0.247f, 0.624f, 0.173f, 1.000f };
+                        ImPlot::SetNextFillStyle(fill_color);
+                        ImPlot::PlotShaded("##plot5_3", data_col6_x[2], data_col6_y[2], data_col6_x[1], rand_data_count, ImPlotShadedFlags_Vertical);
 
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
@@ -461,9 +471,9 @@ int main(int, char**)
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
-                        ImPlot::PlotShaded("##plot5_3", data_col6_x[2], data_col6_y[2], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                        ImPlot::PlotLine("##plot5_3", data_col6_x[2], data_col6_y[2], rand_data_count);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations| ImPlotAxisFlags_AutoFit);
+                        ImPlot::PlotShaded("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        ImPlot::PlotLine("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count);
 
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
@@ -475,14 +485,15 @@ int main(int, char**)
                     // Set opactity of shade to 25%
 
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
-                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels| ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels| ImPlotAxisFlags_LockMax);
                     ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
+                    ImPlot::SetupAxisLimits(ImAxis_X1, 0, 3000);
                     ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
                     ImPlot::SetNextLineStyle(line_color);
                     ImPlot::PlotLine("##line1", data_col7_x[0], data_col7_y[0], rand_data_count);
 
-                    ImVec4 fill_color = { 0.000f, 0.102f, 0.000f, 1.000f };
+                    ImVec4 fill_color = { 0.000f, 0.292f, 0.000f, 1.000f };
                     ImPlot::SetNextFillStyle(fill_color);
                     ImPlot::PlotShaded("##filled1", data_col7_x[0], data_col7_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
 
@@ -501,37 +512,38 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
+                
                 ImGui::TableSetColumnIndex(7);
-                if (ImPlot::BeginPlot("##ELECTROFACIES", ImVec2(-1, -1))) {
-                    // Set opactity of shade to 25%
-
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoDecorations);
-                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
-                    ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
-                    ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
-                    ImPlot::SetNextLineStyle(line_color);
-                    ImPlot::PlotLine("##line1", data_col7_x[0], data_col7_y[0], rand_data_count);
-
-                    ImVec4 fill_color = { 0.000f, 0.102f, 0.000f, 1.000f };
-                    ImPlot::SetNextFillStyle(fill_color);
-                    ImPlot::PlotShaded("##filled1", data_col7_x[0], data_col7_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-
-                    ImPlot::SetAxes(ImAxis_X2, ImAxis_Y1);
+                
+                
 
 
-                    // cái này là bên trái 
-                    line_color = { 0.000f, 0.392f, 0.000f, 1.000f };
+                static ImPlotColormap map = ImPlotColormap_Viridis;
+                if (ImPlot::ColormapButton(ImPlot::GetColormapName(map), ImVec2(225, 0), map)) {
+                    map = (map + 1) % ImPlot::GetColormapCount();
+                    // We bust the color cache of our plots so that item colors will
+                    // resample the new colormap in the event that they have already
+                    // been created. See documentation in implot.h.
+                    ImPlot::BustColorCache("##Heatmap1");
+                    ImPlot::BustColorCache("##Heatmap2");
 
-                    ImPlot::SetNextLineStyle(line_color);
-                    ImPlot::PlotLine("##filled2", data_col7_x[1], data_col7_y[1], rand_data_count);
+                }
 
-                    fill_color = { 0.000f, 0.392f, 0.000f, 1.000f };
-                    ImPlot::SetNextFillStyle(fill_color);
-                    ImPlot::PlotShaded("##line2", data_col7_x[1], data_col7_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    ImPlot::PopStyleVar();
+                ImGui::SameLine();
+                ImGui::LabelText("##Colormap Index", "%s", "Change Colormap");
+                ImGui::SetNextItemWidth(225);
+                ImGui::DragFloatRange2("Min / Max", &scale_min, &scale_max, 0.01f, -20, 20);
+                static ImPlotHeatmapFlags hm_flags = 0;
+                static ImPlotAxisFlags axes_flags = ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks;
+                ImPlot::PushColormap(map);
+
+                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(-1, -1), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
+                    ImPlot::SetupAxes(NULL, NULL, axes_flags|ImPlotAxisFlags_Opposite|ImPlotAxisFlags_NoTickLabels, axes_flags| ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels);
+    
+                    ImPlot::PlotHeatmap("heat", values1, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
                     ImPlot::EndPlot();
                 }
+
                 ImGui::EndTable();
             }
         }
