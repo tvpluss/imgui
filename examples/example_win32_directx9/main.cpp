@@ -181,6 +181,24 @@ int main(int, char**)
 
     }
 
+
+    static double toc_y[rand_data_count];
+    static double toc_x[rand_data_count];
+    double toc_min = 0.1;
+    for (int j = 0; j < rand_data_count; j++) {
+        if (j > 0) {
+            toc_y[j] = toc_y[j - 1] + 1;
+            toc_x[j] = max(toc_x[j - 1] + RandomRange(-0.03, 0.03), 0.0);
+            toc_min = min(toc_min, toc_x[j]);
+        }
+        else {
+            toc_y[j] = 1;
+            toc_x[j] = 0.05;
+        }
+
+    }
+
+
     float root = 0;
     float y_increasement = 1;
     float max_y_axis = rand_data_count * y_increasement;
@@ -344,6 +362,11 @@ int main(int, char**)
                 ImGui::TableSetColumnIndex(4);
                 DrawBasicTable("neutron", neutron_contents, neutron_colors, 3, 3);
 
+                // Sub-table Toc
+                char* toc_contents[3] = { "0.1", "TOC", "0" };
+                ImVec4 toc_colors[1] = { color_red };
+                ImGui::TableSetColumnIndex(5);
+                DrawBasicTable("toc", toc_contents, toc_colors, 1, 3);
                 // Sub-table Mineral
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImVec4 mineral_colors[1] = { color_green };
@@ -382,6 +405,20 @@ int main(int, char**)
                 // GRAPH ROW
                 //-----------------------------------------------------
 
+                // Vertical Text
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(50, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(50, 1000));
+                char* vertical_texts[3] = { "WFMPC", "WFMPB", "WFMPA" };
+                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0))) {
+                    ImPlot::SetupAxesLimits(0, 30, 0, 30);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
+                    for (int i = 0; i < 3; i++) {
+                        ImPlot::PlotText(vertical_texts[i], 15.0f, 6.0f + i * 10, ImVec2(0,0), ImPlotTextFlags_Vertical);
+                    }
+                    ImPlot::EndPlot();
+                }
 
                 //Gamma
                 ImGui::TableSetColumnIndex(1);
@@ -447,6 +484,23 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
 
+                ImPlot::PopStyleVar(2);
+
+                //Toc
+                ImGui::TableSetColumnIndex(5);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(130, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(130, 1000));
+                if (ImPlot::BeginPlot("##Toc_Plot", ImVec2(0, 0))) {
+                    // Set opactity of shade to 25%
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::PlotShaded("##Toc_Plot", toc_x, toc_y, rand_data_count, toc_min, ImPlotShadedFlags_Vertical);
+                    ImPlot::SetNextLineStyle(color_red);
+                    ImPlot::PlotLine("##Toc_Plot", toc_x, toc_y, rand_data_count);
+                    ImPlot::PopStyleVar();
+
+                    ImPlot::EndPlot();
+                }
                 ImPlot::PopStyleVar(2);
                 //Mineral
                 ImGui::TableSetColumnIndex(6);
@@ -574,7 +628,7 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
-                
+
                 //Electrofacies
 
                 ImGui::TableSetColumnIndex(9);
