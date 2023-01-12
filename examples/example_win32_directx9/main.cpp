@@ -9,6 +9,7 @@
 #include <tchar.h>
 #include "implot.h"
 #include <imgui_internal.h>
+//#include "implotex.h";
 // Data
 static LPDIRECT3D9              g_pD3D = NULL;
 static LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
@@ -68,11 +69,11 @@ void SetUpData(double* x, double* y, double y_increasement, double* x_min, int d
 enum MinaralogoyColor
 {
     VCCLAY,
-    VQTZ,
-    VDOL,
-    VCLC,
-    VPYR,
     VOM,
+    VPYR,
+    VCLC,
+    VDOL,
+    VQTZ,
     BVH,
     BVWF,
     BVWI
@@ -121,7 +122,11 @@ int main(int, char**)
     // Setup Dear ImGui style
     //ImGui::StyleColorsDark();
     ImGui::StyleColorsLight();
-
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.Colors[ImGuiCol_WindowBg] = { 1,1,1,1 };
+    ImVec4 col = { 0.9,0.9,0.9,1 };
+    ImPlotStyle& plotstyle = ImPlot::GetStyle();
+    plotstyle.Colors[ImPlotCol_PlotBg] = col;
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
@@ -360,7 +365,7 @@ int main(int, char**)
             static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
             // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
-            if (ImGui::BeginTable("petropy", 10, flags_petropy)) {
+            if (ImGui::BeginTable("petropy", 11, flags_petropy)) {
 
                 // Header Row
                 //ImGui::TableSetupScrollFreeze(0, 1);
@@ -408,16 +413,20 @@ int main(int, char**)
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImVec4 mineral_colors[1] = { color_green };
                 ImGui::TableSetColumnIndex(6);
+                ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4(1,1,1,1));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(350, 60));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(400, 60));
                 if (ImPlot::BeginPlot("##Mineral-Text", ImVec2(0, 0))) {
                     ImPlot::SetupAxesLimits(0, 150, 0, 30);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
                     for (int i = 0; i < 9; i++) {
-                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 10.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PushStyleColor(ImPlotCol_InlayText,minaralogoy_color[i]);
+                        ImPlot::PlotText(mineral_contents[i], 15.0f + i* 15.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PopStyleColor();
                     }
                     ImPlot::EndPlot();
                 }
+                ImPlot::PopStyleColor();
                 // DrawBasicTable("mineral", mineral_contents, mineral_colors, 1, 9);
 
                 // Sub-table Porosity
@@ -457,6 +466,17 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
 
+                ImGui::TableSetColumnIndex(10);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(50, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(50, 1000));
+                if (ImPlot::BeginPlot("##Vertical-Text2", ImVec2(0, 0))) {
+                    ImPlot::SetupAxesLimits(0, 30, 0, 30);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
+                    for (int i = 0; i < 3; i++) {
+                        ImPlot::PlotText(vertical_texts[i], 15.0f, 6.0f + i * 10, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                    }
+                    ImPlot::EndPlot();
+                }
                 //Gamma
                 ImGui::TableSetColumnIndex(1);
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
@@ -540,15 +560,17 @@ int main(int, char**)
                 }
                 ImPlot::PopStyleVar(2);
                 ImGui::TableSetColumnIndex(6);
-
-                if (ImGui::BeginTable("POROSITY SATURATION", 2, flags_petropy, ImVec2(-1, -1))) {
+                
+                if (ImGui::BeginTable("POROSITY SATURATION", 2, ImGuiTableFlags_Resizable  | ImGuiTableFlags_SizingFixedFit)) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(-1, -1))) {
+                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
+                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
+                    if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(0, 0))) {
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert| ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                         ImPlot::SetupAxesLimits(0, 2800, 0, rand_data_count);
                         if (show1st) {
                             ImPlot::SetNextFillStyle(minaralogoy_color[VOM]);
@@ -580,13 +602,15 @@ int main(int, char**)
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
+                    ImPlot::PopStyleVar(2);
                     ImGui::TableSetColumnIndex(1);
-
-                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(150, -1))) {
+                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(150, 1000));
+                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(150, 1000));
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(0, 0))) {
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert | ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert | ImPlotAxisFlags_LockMax| ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit| ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
                         ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000);
                         ImPlot::SetNextFillStyle(minaralogoy_color[BVWI]);
 
@@ -605,14 +629,19 @@ int main(int, char**)
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
+                    ImPlot::PopStyleVar(2);
                     ImGui::EndTable();
                 }
+               
                 ImGui::TableSetColumnIndex(7);
+                ImPlot::PushStyleColor(ImPlotCol_AxisTick, minaralogoy_color[VCLC]);
 
-                if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(150, -1))) {
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
+                if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetupAxes("X", "Y",  ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert| ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoLabel  | ImPlotAxisFlags_NoTickLabels| ImPlotAxisFlags_AutoFit);
                     ImVec4 color = { 0.179f, 0.248f, 0.961f, 1.000f };
                     ImPlot::SetNextLineStyle(color);
                     ImPlot::PlotLine("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count);
@@ -624,12 +653,13 @@ int main(int, char**)
                 }
 
                 ImGui::TableSetColumnIndex(8);
-                if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(-1, -1))) {
+                
+                if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
 
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax, ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
-                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoHighlight | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax| ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax| ImPlotAxisFlags_AutoFit);
                     ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
                     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 3000);
                     ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
@@ -655,36 +685,24 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
-
+                ImPlot::PopStyleVar(2);
                 //Electrofacies
 
                 ImGui::TableSetColumnIndex(9);
-                static ImPlotColormap map = ImPlotColormap_Viridis;
-                if (ImPlot::ColormapButton(ImPlot::GetColormapName(map), ImVec2(225, 0), map)) {
-                    map = (map + 1) % ImPlot::GetColormapCount();
-                    // We bust the color cache of our plots so that item colors will
-                    // resample the new colormap in the event that they have already
-                    // been created. See documentation in implot.h.
-                    ImPlot::BustColorCache("##Heatmap1");
-                    ImPlot::BustColorCache("##Heatmap2");
-
-                }
-
-                ImGui::SameLine();
-                ImGui::LabelText("##Colormap Index", "%s", "Change Colormap");
-                ImGui::SetNextItemWidth(225);
-                ImGui::DragFloatRange2("Min / Max", &scale_min, &scale_max, 0.01f, -20, 20);
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
+                static ImPlotColormap map = ImPlotColormap_Spectral;
                 static ImPlotHeatmapFlags hm_flags = 0;
                 static ImPlotAxisFlags axes_flags = ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks;
                 ImPlot::PushColormap(map);
 
-                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(-1, -1), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
+                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(0, 0), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
                     ImPlot::SetupAxes(NULL, NULL, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit);
 
                     ImPlot::PlotHeatmap("heat", heat_map_values_col8, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
                     ImPlot::EndPlot();
                 }
-
+                ImPlot::PopStyleVar(2);
                 ImGui::EndTable();
             }
         }

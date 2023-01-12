@@ -72,5 +72,6 @@
     <None Include="..\..\misc\debuggers\imgui.natvis">
       <Filter>imgui</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
