@@ -65,8 +65,31 @@ void SetUpData(double* x, double* y, double y_increasement, double* x_min, int d
         y[j] = j * y_increasement;
     }
 }
+enum MinaralogoyColor
+{
+    VCCLAY,
+    VQTZ,
+    VDOL,
+    VCLC,
+    VPYR,
+    VOM,
+    BVH,
+    BVWF,
+    BVWI
+};
+
 int main(int, char**)
 {
+    ImVec4 minaralogoy_color[BVWI + 1];
+    minaralogoy_color[VCCLAY] = { 0.624f, 0.624f, 0.549f, 1.000f};
+    minaralogoy_color[VQTZ] = { 0.200f, 0.200f, 0.200f, 1.000f};
+    minaralogoy_color[VDOL] = { 1.000f, 0.800f, 0.200f, 1.000f};
+    minaralogoy_color[VCLC] = { 0.200f, 0.200f, 1.000f, 1.000f };
+    minaralogoy_color[VPYR] = { 1.000f, 0.800f, 0.800f, 1.000f };
+    minaralogoy_color[VOM] = { 1.000f, 1.000f, 0.584f, 1.000f };
+    minaralogoy_color[BVH] = { 0.247f, 0.624f, 0.173f, 1.000f };
+    minaralogoy_color[BVWF] = { 0.179f, 0.248f, 0.961f, 1.000f };
+    minaralogoy_color[BVWI] = { 0.812f, 0.890f, 0.945f, 1.000f };
     RECT desktop;
     GetWindowRect(GetDesktopWindow(), &desktop);
     // Create application window
@@ -210,20 +233,34 @@ int main(int, char**)
     }
     static double data_col6_x[4][rand_data_count];
     static double data_col6_y[4][rand_data_count];
-    SetUpData(data_col6_x[0], data_col6_y[0], y_increasement, rand_data_count, 0, 500);
-    SetUpData(data_col6_x[1], data_col6_y[1], y_increasement, data_col6_x[0], rand_data_count, 500);
+    SetUpData(data_col6_x[0], data_col6_y[0], y_increasement, rand_data_count, 0, 200);
+    SetUpData(data_col6_x[1], data_col6_y[1], y_increasement, data_col6_x[0], rand_data_count, 200);
     SetUpData(data_col6_x[2], data_col6_y[2], y_increasement, data_col6_x[1], rand_data_count, 700);
-    SetUpData(data_col6_x[3], data_col6_y[3], y_increasement, rand_data_count, 0, 1000);
+    SetUpData(data_col6_x[3], data_col6_y[3], y_increasement, rand_data_count, 200, 1000);
+
     static double data_col7_x[2][rand_data_count];
     static double data_col7_y[2][rand_data_count];
     SetUpData(data_col7_x[0], data_col7_y[0], y_increasement, rand_data_count, 0, 1600);
     SetUpData(data_col7_x[1], data_col7_y[1], y_increasement, rand_data_count, 0, 1600);
-
+    for (int i = 0; i < rand_data_count; i++) {
+        data_col7_y[0][i] = i * y_increasement;
+        if (i == 0 || data_col7_x[0][i - 1] <= 0) {
+            data_col7_x[0][i] = 1600;
+        }
+        else {
+            data_col7_x[0][i] = data_col7_x[0][i - 1] - RandomRange(0, 25);
+            if (data_col7_x[0][i] < 0) {
+                data_col7_x[0][i] = 0;
+            }
+        }
+    }
+    // tạo màu
+    
     static float scale_min = 0;
     static float scale_max = 23.3f;
-    static float values1[rand_data_count];
+    static float heat_map_values_col8[rand_data_count];
     for (int i = 0; i < rand_data_count; i++) {
-        values1[i] = RandomRange(scale_min, scale_max);
+        heat_map_values_col8[i] = RandomRange(scale_min, scale_max);
     }
     bool show1st = true;
     bool show2nd = true;
@@ -372,13 +409,15 @@ int main(int, char**)
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImVec4 mineral_colors[1] = { color_green };
                 ImGui::TableSetColumnIndex(6);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(500, 60));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(500, 60));
-                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0))) {
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(350, 60));
+                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(400, 60));
+                if (ImPlot::BeginPlot("##Mineral-Text", ImVec2(0, 0))) {
                     ImPlot::SetupAxesLimits(0, 150, 0, 30);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
                     for (int i = 0; i < 9; i++) {
+                        ImPlot::PushStyleColor(ImPlotCol_InlayText,minaralogoy_color[i]);
                         ImPlot::PlotText(mineral_contents[i], 15.0f + i* 15.0, 6.0f, ImVec2(0, 0), ImPlotTextFlags_Vertical);
+                        ImPlot::PopStyleColor();
                     }
                     ImPlot::EndPlot();
                 }
@@ -512,107 +551,97 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
-                //Mineral
                 ImGui::TableSetColumnIndex(6);
-                ImGui::Checkbox("show1st", &show1st);      // Edit bools storing our window open/close state
-                ImGui::SameLine();
-                ImGui::Checkbox("show2nd", &show2nd);
-                ImGui::SameLine();
-                ImGui::Checkbox("show3rd", &show3rd);
-                ImGui::Checkbox("show4th", &show4th);
-                ImGui::SameLine();
-                ImGui::Checkbox("show5th", &show5th);
 
-                if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(-1, -1))) {
-                    // Set opactity of shade to 25%
-
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations);
-                    ImPlot::SetupAxesLimits(0, 2800, 0, rand_data_count);
-                    if (show1st) {
-                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 1.000f, 0.584f, 1.000f));
-                        ImPlot::PlotShaded("##Test_Depth1", data_col5_x[0], data_col5_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    }
-                    if (show2nd) {
-                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 0.800f, 0.800f, 1.000f));
-
-                        ImPlot::PlotShaded("##Test_Depth3", data_col5_x[1], data_col5_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    }
-                    if (show3rd) {
-                        ImPlot::SetNextFillStyle(ImVec4(0.200f, 0.200f, 1.000f, 1.000f));
-
-                        ImPlot::PlotShaded("##Test_Depth4", data_col5_x[2], data_col5_y[2], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    }
-                    if (show4th) {
-                        ImPlot::SetNextFillStyle(ImVec4(1.000f, 0.800f, 0.200f, 1.000f));
-
-                        ImPlot::PlotShaded("##Test_Depth5", data_col5_x[3], data_col5_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    }
-                    if (show5th) {
-                        ImPlot::SetNextFillStyle(ImVec4(0.200f, 0.200f, 0.200f, 1.000f));
-
-                        ImPlot::PlotShaded("##Test_Depth6", data_col5_x[4], data_col5_y[4], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                    }
-                    ImPlot::PopStyleVar();
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
-                    ImPlot::SetNextFillStyle(ImVec4(0.624f, 0.624f, 0.549f, 1.000f));
-                    ImPlot::PlotShaded("##VClay", data_col5_x[0], data_col5_y[0], rand_data_count, 2800, ImPlotShadedFlags_Vertical);
-                    ImPlot::PopStyleVar();
-                    ImPlot::EndPlot();
-                }
-
-                //Porosity
-                ImGui::TableSetColumnIndex(7);
                 if (ImGui::BeginTable("POROSITY SATURATION", 2, flags_petropy, ImVec2(-1, -1))) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    // bảng này bên trái 
-                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(-1, -1))) {
+                    if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(-1, -1))) {
                         // Set opactity of shade to 25%
 
-                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert| ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations);
-                        ImPlot::SetupAxisLimits(ImAxis_X1,0, 1500);
-                        ImPlot::PlotShaded("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                        ImPlot::SetupAxesLimits(0, 2800, 0, rand_data_count);
+                        if (show1st) {
+                            ImPlot::SetNextFillStyle(minaralogoy_color[VOM]);
+                            ImPlot::PlotShaded("##Test_Depth1", data_col5_x[0], data_col5_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        }
+                        if (show2nd) {
+                            ImPlot::SetNextFillStyle(minaralogoy_color[VPYR]);
+                            
+                            ImPlot::PlotShaded("##Test_Depth3", data_col5_x[1], data_col5_y[1], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        }
+                        if (show3rd) {
+                            ImPlot::SetNextFillStyle(minaralogoy_color[VCLC]);
+                            ImPlot::PlotShaded("##Test_Depth4", data_col5_x[2], data_col5_y[2], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        }
+                        if (show4th) {
+                            ImPlot::SetNextFillStyle(minaralogoy_color[VDOL]);
+
+                            ImPlot::PlotShaded("##Test_Depth5", data_col5_x[3], data_col5_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        }
+                        if (show5th) {
+                            ImPlot::SetNextFillStyle(minaralogoy_color[VQTZ]);
+                            
+                            ImPlot::PlotShaded("##Test_Depth6", data_col5_x[4], data_col5_y[4], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        }
                         ImPlot::PopStyleVar();
-                        // hard blue shade
-                        ImVec4 fill_color = { 0.179f, 0.248f, 0.961f, 1.000f};
-                        ImPlot::SetNextFillStyle(fill_color);
-                        ImPlot::PlotShaded("##plot5_2", data_col6_x[1], data_col6_y[1], data_col6_x[0], rand_data_count, ImPlotShadedFlags_Vertical);
-
-                        //green shade
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
-                        fill_color = { 0.247f, 0.624f, 0.173f, 1.000f };
-                        ImPlot::SetNextFillStyle(fill_color);
-                        ImPlot::PlotShaded("##plot5_3", data_col6_x[2], data_col6_y[2], data_col6_x[1], rand_data_count, ImPlotShadedFlags_Vertical);
-
+                        ImPlot::SetNextFillStyle(minaralogoy_color[VCCLAY]);
+                        ImPlot::PlotShaded("##VClay", data_col5_x[0], data_col5_y[0], rand_data_count, 2800, ImPlotShadedFlags_Vertical);
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
                     ImGui::TableSetColumnIndex(1);
-                    // bảng này bên phải
-                    if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(-1, -1))) {
+
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(150, -1))) {
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations| ImPlotAxisFlags_AutoFit);
-                        ImPlot::PlotShaded("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
-                        ImPlot::PlotLine("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count);
+                        ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert | ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                        ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000);
+                        ImPlot::SetNextFillStyle(minaralogoy_color[BVWI]);
+
+                        ImPlot::PlotShaded("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                        ImPlot::PopStyleVar();
+                        // hard blue shade
+                        
+                        ImPlot::SetNextFillStyle(minaralogoy_color[BVWF]);
+                        ImPlot::PlotShaded("##plot5_2", data_col6_x[1], data_col6_y[1], data_col6_x[0], rand_data_count, ImPlotShadedFlags_Vertical);
+
+                        //green shade
+                        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 1.0f);
+                        ImPlot::SetNextFillStyle(minaralogoy_color[BVH]);
+                        ImPlot::PlotShaded("##plot5_3", data_col6_x[2], data_col6_y[2], data_col6_x[1], rand_data_count, ImPlotShadedFlags_Vertical);
 
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
                     ImGui::EndTable();
                 }
+                ImGui::TableSetColumnIndex(7);
 
-                //Oil in place
+                if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(150, -1))) {
+                    // Set opactity of shade to 25%
+                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Invert, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImVec4 color = { 0.179f, 0.248f, 0.961f, 1.000f };
+                    ImPlot::SetNextLineStyle(color);
+                    ImPlot::PlotLine("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count);
+                    ImPlot::PlotShaded("##plot5_4", data_col6_x[3], data_col6_y[3], rand_data_count, 0, ImPlotShadedFlags_Vertical);
+
+
+                    ImPlot::PopStyleVar();
+                    ImPlot::EndPlot();
+                }
+
                 ImGui::TableSetColumnIndex(8);
                 if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(-1, -1))) {
                     // Set opactity of shade to 25%
 
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels| ImPlotAxisFlags_LockMax, ImPlotAxisFlags_NoDecorations);
-                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels| ImPlotAxisFlags_LockMax);
+                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax, ImPlotAxisFlags_Invert | ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax);
                     ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
                     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 3000);
                     ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
@@ -662,9 +691,9 @@ int main(int, char**)
                 ImPlot::PushColormap(map);
 
                 if (ImPlot::BeginPlot("##Heatmap1", ImVec2(-1, -1), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
-                    ImPlot::SetupAxes(NULL, NULL, axes_flags|ImPlotAxisFlags_Opposite|ImPlotAxisFlags_NoTickLabels, axes_flags| ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels);
-    
-                    ImPlot::PlotHeatmap("heat", values1, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
+                    ImPlot::SetupAxes(NULL, NULL, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit);
+
+                    ImPlot::PlotHeatmap("heat", heat_map_values_col8, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
                     ImPlot::EndPlot();
                 }
 
@@ -675,26 +704,26 @@ int main(int, char**)
             }
         }
         ImGui::End();
-    
 
-    // Rendering
-    ImGui::EndFrame();
-    g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-    g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-    g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-    D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x * clear_color.w * 255.0f), (int)(clear_color.y * clear_color.w * 255.0f), (int)(clear_color.z * clear_color.w * 255.0f), (int)(clear_color.w * 255.0f));
-    g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
-    if (g_pd3dDevice->BeginScene() >= 0)
-    {
-        ImGui::Render();
-        ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-        g_pd3dDevice->EndScene();
-    }
-    HRESULT result = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 
-    // Handle loss of D3D9 device
-    if (result == D3DERR_DEVICELOST && g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
-        ResetDevice();
+        // Rendering
+        ImGui::EndFrame();
+        g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+        g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+        D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x * clear_color.w * 255.0f), (int)(clear_color.y * clear_color.w * 255.0f), (int)(clear_color.z * clear_color.w * 255.0f), (int)(clear_color.w * 255.0f));
+        g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
+        if (g_pd3dDevice->BeginScene() >= 0)
+        {
+            ImGui::Render();
+            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            g_pd3dDevice->EndScene();
+        }
+        HRESULT result = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
+
+        // Handle loss of D3D9 device
+        if (result == D3DERR_DEVICELOST && g_pd3dDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+            ResetDevice();
     }
 
     ImGui_ImplDX9_Shutdown();
