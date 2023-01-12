@@ -365,7 +365,12 @@ int main(int, char**)
             static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
             // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
+<<<<<<< HEAD
             if (ImGui::BeginTable("petropy", 11, flags_petropy)) {
+=======
+            static ImPlotFlags plot_flags = ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs;
+            if (ImGui::BeginTable("petropy", 10, flags_petropy)) {
+>>>>>>> 8af75ba896af86ab51ba004a3c72f936dc7ed1b3
 
                 // Header Row
                 //ImGui::TableSetupScrollFreeze(0, 1);
@@ -451,13 +456,19 @@ int main(int, char**)
                 // GRAPH ROW
                 //-----------------------------------------------------
 
+                //Setup Global styling and variables
+                // Setup Plot Axis
+                ImPlot::PushStyleColor(ImPlotCol_AxisTick, {0.0, 0.0, 0.0, 1.0});
+                static ImPlotAxisFlags x_axis = ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoMenus;
+                static ImPlotAxisFlags y_axis = ImPlotAxisFlags_NoGridLines| ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoMenus;
+
                 // Vertical Text
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(50, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(50, 1000));
                 char* vertical_texts[3] = { "WFMPC", "WFMPB", "WFMPA" };
-                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0))) {
+                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0), plot_flags)) {
                     ImPlot::SetupAxesLimits(0, 30, 0, 30);
                     ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
                     for (int i = 0; i < 3; i++) {
@@ -481,15 +492,16 @@ int main(int, char**)
                 ImGui::TableSetColumnIndex(1);
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
-                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0, 0))) {
+                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0, 0), plot_flags)) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
-                    ImPlot::PlotShaded("##Test", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
+                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
+                    ImPlot::PlotShaded("##Gamma", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
                     ImPlot::SetNextLineStyle(color_green);
-                    ImPlot::PlotLine("##Test", x, y, rand_data_count);
+                    ImPlot::PlotLine("##Gamma", x, y, rand_data_count);
                     ImPlot::SetNextLineStyle(color_red);
-                    ImPlot::PlotLine("##Test1", x1, y1, rand_data_count);
+                    ImPlot::PlotLine("##Gamma1", x1, y1, rand_data_count);
                     ImPlot::PopStyleVar();
 
                     ImPlot::EndPlot();
@@ -515,7 +527,8 @@ int main(int, char**)
                     // Set opactity of shade to 25%
 
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis| ImPlotAxisFlags_AuxDefault);
                     ImPlot::PlotShaded("##Resist_resmed", resist_resmed, resist_y, rand_data_count, 1200, ImPlotShadedFlags_Vertical);
                     ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Resist_resmed", resist_resmed, resist_y, rand_data_count);
@@ -531,7 +544,8 @@ int main(int, char**)
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(0, 0))) {
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
+                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::SetNextLineStyle(color_blue);
                     ImPlot::PlotLine("##Neutron_nphi", neutron_nphi, neutron_y, rand_data_count);
                     ImPlot::SetNextLineStyle(color_red);
@@ -550,8 +564,8 @@ int main(int, char**)
                 if (ImPlot::BeginPlot("##Toc_Plot", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_AutoFit);
-                    ImPlot::PlotShaded("##Toc_Plot", toc_x, toc_y, rand_data_count, toc_min, ImPlotShadedFlags_Vertical);
+                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault); ImPlot::PlotShaded("##Toc_Plot", toc_x, toc_y, rand_data_count, toc_min, ImPlotShadedFlags_Vertical);
                     ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Toc_Plot", toc_x, toc_y, rand_data_count);
                     ImPlot::PopStyleVar();
@@ -702,7 +716,14 @@ int main(int, char**)
                     ImPlot::PlotHeatmap("heat", heat_map_values_col8, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
                     ImPlot::EndPlot();
                 }
+<<<<<<< HEAD
                 ImPlot::PopStyleVar(2);
+=======
+
+                // Pop global styling
+                ImPlot::PopStyleColor();
+
+>>>>>>> 8af75ba896af86ab51ba004a3c72f936dc7ed1b3
                 ImGui::EndTable();
             }
         }
