@@ -43,6 +43,9 @@
     <ClCompile Include="..\..\implot_items.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="adjust_param_gui.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h">
@@ -64,6 +67,9 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="..\..\implot_internal.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="adjust_param_gui.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
