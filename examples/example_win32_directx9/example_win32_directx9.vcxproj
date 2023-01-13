@@ -156,6 +156,7 @@
     <ClCompile Include="..\..\implot_demo.cpp" />
     <ClCompile Include="..\..\implot_items.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="adjust_param_gui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\imconfig.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="..\..\backends\imgui_impl_win32.h" />
     <ClInclude Include="..\..\implot.h" />
     <ClInclude Include="..\..\implot_internal.h" />
+    <ClInclude Include="adjust_param_gui.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\misc\debuggers\imgui.natvis" />

@@ -2,13 +2,11 @@
 // If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
-#include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
 #include <d3d9.h>
 #include <tchar.h>
-#include "implot.h"
-#include <imgui_internal.h>
+#include "adjust_param_gui.h"
 //#include "implotex.h";
 // Data
 static LPDIRECT3D9              g_pD3D = NULL;
@@ -81,6 +79,7 @@ enum MinaralogoyColor
 
 int main(int, char**)
 {
+    static int selected_fish = 0;
     ImVec4 minaralogoy_color[BVWI + 1];
     minaralogoy_color[VCCLAY] = { 0.624f, 0.624f, 0.549f, 1.000f};
     minaralogoy_color[VQTZ] = { 0.200f, 0.200f, 0.200f, 1.000f};
@@ -146,11 +145,11 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
-    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 30.0f);
+    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Arial.ttf", 24.0f);
     ImFont* font_h1 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 24.0f);
-
     ImFont* font_h2 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 20.0f);
     ImFont* font_text = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
+
     IM_ASSERT(font_h0 != NULL);
     IM_ASSERT(font_h1 != NULL);
     IM_ASSERT(font_h2 != NULL);
@@ -285,6 +284,7 @@ int main(int, char**)
             neutron_nphi[j] = neutron_pe[j] + RandomRange(-5, 5);
             neutron_rhob[j] = neutron_pe[j] + RandomRange(1.95, 2.95);
             neutron_y[j] = neutron_y[j - 1] + 1;
+
         }
         else {
             neutron_pe[j] = 5;
@@ -302,6 +302,8 @@ int main(int, char**)
     ImVec4 color_black = ImVec4(0.0, 0.0, 0.0, 1.0);
     // Main loop
     bool done = false;
+    ImVec4 shade_color = ImVec4(0, 0, 0, 1);
+
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -361,6 +363,8 @@ int main(int, char**)
         ImGui::SetNextWindowPos(vp->WorkPos);
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
+            ParamAdjust::controller();
+            ParamAdjust::ColorGui();
             // TODO: Remove Resizable flags after developments
             static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
             // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
@@ -542,7 +546,7 @@ int main(int, char**)
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(0, 0))) {
-                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::SetNextLineStyle(color_blue);
                     ImPlot::PlotLine("##Neutron_nphi", neutron_nphi, neutron_y, rand_data_count);
@@ -562,7 +566,7 @@ int main(int, char**)
                 if (ImPlot::BeginPlot("##Toc_Plot", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault); ImPlot::PlotShaded("##Toc_Plot", toc_x, toc_y, rand_data_count, toc_min, ImPlotShadedFlags_Vertical);
                     ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Toc_Plot", toc_x, toc_y, rand_data_count);
@@ -581,7 +585,7 @@ int main(int, char**)
                     if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(0, 0))) {
                         // Set opactity of shade to 25%
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
-                        ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                        ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                         ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                         ImPlot::SetupAxesLimits(0, 2800, 0, rand_data_count);
                         if (show1st) {
@@ -622,7 +626,7 @@ int main(int, char**)
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                        ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                        ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                         ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                         ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000);
                         ImPlot::SetNextFillStyle(minaralogoy_color[BVWI]);
@@ -647,14 +651,13 @@ int main(int, char**)
                 }
                
                 ImGui::TableSetColumnIndex(7);
-                ImPlot::PushStyleColor(ImPlotCol_AxisTick, minaralogoy_color[VCLC]);
 
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-                    ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
+                    ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImVec4 color = { 0.179f, 0.248f, 0.961f, 1.000f };
                     ImPlot::SetNextLineStyle(color);
@@ -667,26 +670,22 @@ int main(int, char**)
                 }
 
                 ImGui::TableSetColumnIndex(8);
-                //OIL IN PLACE
+                
                 if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(0, 0))) {
                     // Set opactity of shade to 25%
-
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-
-                
-
-                    ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert| ImPlotAxisFlags_LockMax, y_axis);
+                    ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert | ImPlotAxisFlags_LockMax, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::SetupAxis(ImAxis_X2, "X-Axis 2", ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_LockMax | ImPlotAxisFlags_AutoFit);
 
                     ImPlot::SetupAxisLimits(ImAxis_X2, 0, 3000);
                     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 3000);
                     ImVec4 line_color = { 0.000f, 0.0f, 0.000f, 1.000f };
-                    ImPlot::SetNextLineStyle(line_color);
+                    ImPlot::SetNextLineStyle(ParamAdjust::getColor());
                     ImPlot::PlotLine("##line1", data_col7_x[0], data_col7_y[0], rand_data_count);
 
                     ImVec4 fill_color = { 0.000f, 0.292f, 0.000f, 1.000f };
-                    ImPlot::SetNextFillStyle(fill_color);
+                    ImPlot::SetNextFillStyle(ParamAdjust::getColor());
                     ImPlot::PlotShaded("##filled1", data_col7_x[0], data_col7_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
 
                     ImPlot::SetAxes(ImAxis_X2, ImAxis_Y1);
