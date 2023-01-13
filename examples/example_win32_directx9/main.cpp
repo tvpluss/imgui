@@ -64,6 +64,7 @@ void SetUpData(double* x, double* y, double y_increasement, double* x_min, int d
         y[j] = j * y_increasement;
     }
 }
+
 enum MinaralogoyColor
 {
     VCCLAY,
@@ -139,17 +140,17 @@ int main(int, char**)
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 18.0f);
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+    io.Fonts->AddFontFromFileTTF("../../misc/fonts/bonobo.ttf", 16.0f);
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("../../misc/fonts/ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
-    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Arial.ttf", 24.0f);
-    ImFont* font_h1 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 24.0f);
-    ImFont* font_h2 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 20.0f);
-    ImFont* font_text = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
-
+    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 30.0f);
+    ImFont* font_h1 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 24.0f);
+    ImFont* font_h2 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 20.0f);
+    ImFont* font_text = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 16.0f);
     IM_ASSERT(font_h0 != NULL);
     IM_ASSERT(font_h1 != NULL);
     IM_ASSERT(font_h2 != NULL);
@@ -161,6 +162,8 @@ int main(int, char**)
     bool show_implot_demo_window = false;
     bool my_form = false;
     bool my_table = true;
+    float line_weight = 1.0;
+    float filling = 0.25;
     const int rand_data_count = 400;
     ImVec4 clear_color = ImVec4(0.25f, 0.35f, 0.00f, 1.00f);
 
@@ -363,10 +366,24 @@ int main(int, char**)
         ImGui::SetNextWindowPos(vp->WorkPos);
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
-            ParamAdjust::controller();
-            ParamAdjust::ColorGui();
+
+            // Global Configuration
+            ImGui::ShowFontSelector("Font Selector");
+
+            ImGui::SliderFloat("Line Thickness", &line_weight, 0.0f, 3.0f, "ratio = %.2f");
+
+            ImGui::SliderFloat("Filling", &filling, 0.0f, 1.0f, "ratio = %.1f");
+
+            ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines);
+            ImGui::SameLine();
+            ImGui::Checkbox("Anti-aliased lines use texture", &style.AntiAliasedLinesUseTex);
+            ImGui::SameLine();
+            ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
+
+        //    ParamAdjust::controller();
+         //   ParamAdjust::ColorGui();
             // TODO: Remove Resizable flags after developments
-            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
+            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
             // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
 
@@ -461,6 +478,8 @@ int main(int, char**)
                 //Setup Global styling and variables
                 // Setup Plot Axis
                 ImPlot::PushStyleColor(ImPlotCol_AxisTick, {0.0, 0.0, 0.0, 1.0});
+                ImPlot::PushStyleVar(ImPlotStyleVar_LineWeight, line_weight);
+                ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, filling);
                 static ImPlotAxisFlags x_axis = ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoMenus;
                 static ImPlotAxisFlags y_axis = ImPlotAxisFlags_NoGridLines| ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoMenus;
 
@@ -495,8 +514,6 @@ int main(int, char**)
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0, 0), plot_flags)) {
-                    // Set opactity of shade to 25%
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::PlotShaded("##Gamma", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
@@ -504,7 +521,6 @@ int main(int, char**)
                     ImPlot::PlotLine("##Gamma", x, y, rand_data_count);
                     ImPlot::SetNextLineStyle(color_red);
                     ImPlot::PlotLine("##Gamma1", x1, y1, rand_data_count);
-                    ImPlot::PopStyleVar();
 
                     ImPlot::EndPlot();
                 }
@@ -526,9 +542,6 @@ int main(int, char**)
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
                 if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0, 0))) {
-                    // Set opactity of shade to 25%
-
-                    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis| ImPlotAxisFlags_AuxDefault);
                     ImPlot::PlotShaded("##Resist_resmed", resist_resmed, resist_y, rand_data_count, 1200, ImPlotShadedFlags_Vertical);
@@ -536,7 +549,6 @@ int main(int, char**)
                     ImPlot::PlotLine("##Resist_resmed", resist_resmed, resist_y, rand_data_count);
                     ImPlot::SetNextLineStyle(color_black);
                     ImPlot::PlotLine("##Resist_resdeep", resist_resdeep, resist_y, rand_data_count);
-                    ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
                 ImPlot::PopStyleVar(2);
@@ -556,7 +568,6 @@ int main(int, char**)
                     ImPlot::PlotLine("##Neutron_pe", neutron_pe, neutron_y, rand_data_count);
                     ImPlot::EndPlot();
                 }
-
                 ImPlot::PopStyleVar(2);
 
                 //Toc
@@ -724,7 +735,7 @@ int main(int, char**)
 
                 // Pop global styling
                 ImPlot::PopStyleColor();
-
+                ImPlot::PopStyleVar(2);
                 ImGui::EndTable();
             }
         }

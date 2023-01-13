@@ -6,7 +6,6 @@
 #endif
 
 namespace ParamAdjust {
-
     void ColorGui(ImGuiStyle* ref) {
         // You can pass in a reference ImGuiStyle structure to compare to, revert to and save to
         // (without a reference style pointer, we will use one compared locally as a reference)
