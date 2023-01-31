@@ -8,6 +8,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{a82cba23-9de0-45c2-b1e3-2eb1666702de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{13568887-e86b-4cc6-8de4-0b0f2819e0d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -43,7 +46,10 @@
     <ClCompile Include="..\..\implot_items.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="adjust_param_gui.cpp">
+    <ClCompile Include="config.cpp">
+      <Filter>config</Filter>
+    </ClCompile>
+    <ClCompile Include="Table.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,8 +75,8 @@
     <ClInclude Include="..\..\implot_internal.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="adjust_param_gui.h">
-      <Filter>sources</Filter>
+    <ClInclude Include="config.h">
+      <Filter>config</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
