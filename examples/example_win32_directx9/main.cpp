@@ -8,6 +8,7 @@
 #include <tchar.h>
 #include "config.h"
 #include "Table.h"
+#include <imgui_internal.h>
 //#include "implotex.h";
 // todo: bị lỗi begin child, end child
 static Table testTable;
@@ -23,6 +24,40 @@ void CleanupDeviceD3D();
 void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+void ShowFontSelector(const char* label)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* font_current = ImGui::GetFont();
+    if (ImGui::BeginCombo(label, font_current->GetDebugName()))
+    {
+        for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+        {
+            ImFont* font = io.Fonts->Fonts[n];
+            ImGui::PushID((void*)font);
+            if (ImGui::Selectable(font->GetDebugName(), font == font_current))
+                io.FontDefault = font;
+            ImGui::PopID();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+}
+void longCrossHairCursor()
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+    ImVec2 mousePos = ImGui::GetMousePos();
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    window->DrawList->AddLine(ImVec2(0, mousePos.y + viewport->WorkPos.y),
+        ImVec2(viewport->WorkSize.x, mousePos.y + viewport->WorkPos.y),
+        ImGui::GetColorU32(ImVec4(1, 0, 0, 255)), 1.0f);
+
+    window->DrawList->AddLine(ImVec2(mousePos.x + viewport->WorkPos.x, 0),
+        ImVec2(mousePos.x + viewport->WorkPos.x, viewport->WorkSize.y),
+        ImGui::GetColorU32(ImVec4(1, 0, 0, 255)), 1.0f);
+}
 // Main code
 float RandomRange(float min, float max) {
     float scale = rand() / (float)RAND_MAX;
@@ -52,7 +87,31 @@ void DrawBasicTable(char* label, char* contents[], ImVec4 colors[], int row, int
         ImGui::EndTable();
     }
 };
-
+void initFonts() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* my_default = io.Fonts->AddFontFromFileTTF("../../misc/fonts/bonobo.ttf", 16.0f);
+    ImFont* proggy = io.Fonts->AddFontDefault();
+    ImFont* proggy2 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 18.0f);
+    ImFont* proggy3 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+    ImFont* proggy4 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+    ImFont* proggy5 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+    io.FontDefault = my_default;
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("../../misc/fonts/ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+    //IM_ASSERT(font != NULL);
+    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 30.0f);
+    ImFont* font_h1 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 24.0f);
+    ImFont* font_h2 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 20.0f);
+    ImFont* font_text = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 16.0f);
+    IM_ASSERT(my_default != NULL);
+    IM_ASSERT(proggy != NULL);
+    IM_ASSERT(proggy2 != NULL);
+    IM_ASSERT(proggy3 != NULL);
+    IM_ASSERT(proggy4 != NULL);
+    IM_ASSERT(proggy5 != NULL);
+    IM_ASSERT(font_h1 != NULL);
+    IM_ASSERT(font_h2 != NULL);
+    IM_ASSERT(font_text != NULL);
+}
 void SetUpData(double* x, double* y, double y_increasement, int data_count, double x_min, double x_max) {
 
     for (int j = 0; j < data_count; j++) {
@@ -87,9 +146,9 @@ int main(int, char**)
 
     static int selected_fish = 0;
     ImVec4 minaralogoy_color[BVWI + 1];
-    minaralogoy_color[VCCLAY] = { 0.624f, 0.624f, 0.549f, 1.000f};
-    minaralogoy_color[VQTZ] = { 0.200f, 0.200f, 0.200f, 1.000f};
-    minaralogoy_color[VDOL] = { 1.000f, 0.800f, 0.200f, 1.000f};
+    minaralogoy_color[VCCLAY] = { 0.624f, 0.624f, 0.549f, 1.000f };
+    minaralogoy_color[VQTZ] = { 0.200f, 0.200f, 0.200f, 1.000f };
+    minaralogoy_color[VDOL] = { 1.000f, 0.800f, 0.200f, 1.000f };
     minaralogoy_color[VCLC] = { 0.200f, 0.200f, 1.000f, 1.000f };
     minaralogoy_color[VPYR] = { 1.000f, 0.800f, 0.800f, 1.000f };
     minaralogoy_color[VOM] = { 1.000f, 1.000f, 0.584f, 1.000f };
@@ -120,7 +179,7 @@ int main(int, char**)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImPlot::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -144,22 +203,9 @@ int main(int, char**)
     // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF("../../misc/fonts/bonobo.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 18.0f);
-    io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("../../misc/fonts/ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != NULL);
-    ImFont* font_h0 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 30.0f);
-    ImFont* font_h1 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 24.0f);
-    ImFont* font_h2 = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 20.0f);
-    ImFont* font_text = io.Fonts->AddFontFromFileTTF("../../misc/fonts/segoeui.ttf", 16.0f);
-    IM_ASSERT(font_h0 != NULL);
-    IM_ASSERT(font_h1 != NULL);
-    IM_ASSERT(font_h2 != NULL);
-    IM_ASSERT(font_text != NULL);
+
+    initFonts();
+    
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -349,7 +395,6 @@ int main(int, char**)
             ImGui::Checkbox("Another Window", &show_another_window);
             ImGui::Checkbox("My first Window", &my_tool_active);
             ImGui::Checkbox("Demo Table", &my_table);
-            ImGui::Checkbox("Demo multiChart", &my_table_window);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -363,9 +408,7 @@ int main(int, char**)
             ImGui::End();
         }
         // 3. Show another simple window.
-        if (my_table_window) {
-            testTable.drawTable(&my_table_window);
-        }
+     
         const ImGuiViewport* vp = ImGui::GetMainViewport();
         ImGui::SetNextWindowSize(vp->WorkSize);
         ImGui::SetNextWindowPos(vp->WorkPos);
@@ -373,35 +416,33 @@ int main(int, char**)
             ImGui::Begin("My Table", &my_table);
 
             // Global Configuration
-            ImGui::ShowFontSelector("Font Selector");
-            ImFont* font = ImGui::GetFont();
-            const ImFontConfig* fontConfig = font->ConfigData;
-            // ImGui::SliderInt("font size", , 1, 16, "ratio = 1");
+    
+          
             ImVec4& col = style.Colors[ImGuiCol_WindowBg];
-
+            ShowFontSelector("test font selector");
 
             ImGui::ColorEdit3("MyColor##1", (float*)&col);
             ImGui::SliderFloat("Line Thickness", &line_weight, 0.0f, 3.0f, "ratio = %.2f");
 
             ImGui::SliderFloat("Filling", &filling, 0.0f, 1.0f, "ratio = %.1f");
-
             ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines);
-
            
+      
             Config::controller(style);
-            Config::ColorGui();
+          //  Config::ColorGui();
             // TODO: Remove Resizable flags after developments
-            static ImGuiTableFlags flags_petropy = ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingFixedFit;
+            static ImGuiTableFlags flags_petropy =   ImGuiTableFlags_SizingFixedFit;
             // TODO: Add | ImGuiTableColumnFlags_NoResize flag to fix width of columns
             static ImGuiTableColumnFlags column_flags = ImGuiTableColumnFlags_NoHeaderWidth | ImGuiTableColumnFlags_WidthFixed;
 
-            
+            int table_collumn= 9;
+            float table_width;
             static ImPlotFlags plot_flags = ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs;
-            if (ImGui::BeginTable("petropy", 11, flags_petropy)) {
+             table_width = ImGui::GetContentRegionAvail().x / table_collumn - 10;
+            if (ImGui::BeginTable("petropy", table_collumn, flags_petropy)) {
 
                 // Header Row
                 //ImGui::TableSetupScrollFreeze(0, 1);
-                ImGui::TableSetupColumn("##VERTICAL-TEXT", column_flags );
                 ImGui::TableSetupColumn("GAMMA RAY", column_flags);
                 ImGui::TableSetupColumn("DEPTH", column_flags);
                 ImGui::TableSetupColumn("RESISTIVITY", column_flags);
@@ -421,30 +462,30 @@ int main(int, char**)
                 // Sub-table GAMMA RAY
                 char* gamma_contents[6] = { "0", "GR", "150", "0", "CAL", "16" };
                 ImVec4 gama_colors[2] = { color_green, color_red };
-                ImGui::TableSetColumnIndex(1);
+                ImGui::TableSetColumnIndex(0);
                 DrawBasicTable("gamma-ray", gamma_contents, gama_colors, 2, 3);
 
                 // Sub-table Resist
                 char* resist_contents[6] = { "2","RESDEEP", "2000", "2","RESMED", "2000" };
                 ImVec4 resist_colors[2] = { color_black , color_red };
-                ImGui::TableSetColumnIndex(3);
+                ImGui::TableSetColumnIndex(2);
                 DrawBasicTable("resist", resist_contents, resist_colors, 2, 3);
 
                 // Sub-table Neutron
                 char* neutron_contents[9] = { "0.45", "NPHI", "-0.15", "1.95", "RHOB", "2.95", "0", "PE", "10" };
                 ImVec4 neutron_colors[3] = { color_blue, color_red, color_black };
-                ImGui::TableSetColumnIndex(4);
+                ImGui::TableSetColumnIndex(3);
                 DrawBasicTable("neutron", neutron_contents, neutron_colors, 3, 3);
 
                 // Sub-table Toc
                 char* toc_contents[3] = { "0.1", "TOC", "0" };
                 ImVec4 toc_colors[1] = { color_red };
-                ImGui::TableSetColumnIndex(5);
+                ImGui::TableSetColumnIndex(4);
                 DrawBasicTable("toc", toc_contents, toc_colors, 1, 3);
                 // Sub-table Mineral
                 char* mineral_contents[9] = { "VCLAY", "VQTZ", "VDOL", "VCLC", "VPYR", "VOM", "BVH", "BVWF", "BVWI" };
                 ImVec4 mineral_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(6);
+                ImGui::TableSetColumnIndex(5);
                 ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4(1,1,1,1));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(350, 60));
                 ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(400, 60));
@@ -464,19 +505,19 @@ int main(int, char**)
                 // Sub-table Porosity
                 char* porosity_contents[3] = { "1", "Sw", "0" };
                 ImVec4 porosity_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(7);
+                ImGui::TableSetColumnIndex(6);
                 DrawBasicTable("porosity", porosity_contents, porosity_colors, 1, 3);
 
                 // Sub-table oil
                 char* oil_contents[6] = { "0", "OIP", "0.25", "50", "SUM OIP", "0" };
                 ImVec4 oil_colors[2] = { color_green, color_red };
-                ImGui::TableSetColumnIndex(8);
+                ImGui::TableSetColumnIndex(7);
                 DrawBasicTable("oil", oil_contents, oil_colors, 2, 1);
 
                 // Sub-table electro
                 char* electro_contents[2] = { "0", "1" };
                 ImVec4 electro_colors[1] = { color_green };
-                ImGui::TableSetColumnIndex(9);
+                ImGui::TableSetColumnIndex(8);
                 DrawBasicTable("electro", electro_contents, electro_colors, 1, 2);
 
                 //-----------------------------------------------------
@@ -493,35 +534,11 @@ int main(int, char**)
 
                 // Vertical Text
                 ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(50, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(50, 1000));
-                char* vertical_texts[3] = { "WFMPC", "WFMPB", "WFMPA" };
-                if (ImPlot::BeginPlot("##Vertical-Text", ImVec2(0, 0), plot_flags)) {
-                    ImPlot::SetupAxesLimits(0, 30, 0, 30);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
-                    for (int i = 0; i < 3; i++) {
-                        ImPlot::PlotText(vertical_texts[i], 15.0f, 6.0f + i * 10, ImVec2(0,0), ImPlotTextFlags_Vertical);
-                    }
-                    ImPlot::EndPlot();
-                }
-
-                ImGui::TableSetColumnIndex(10);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(50, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(50, 1000));
-                if (ImPlot::BeginPlot("##Vertical-Text2", ImVec2(0, 0))) {
-                    ImPlot::SetupAxesLimits(0, 30, 0, 30);
-                    ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_Lock);
-                    for (int i = 0; i < 3; i++) {
-                        ImPlot::PlotText(vertical_texts[i], 15.0f, 6.0f + i * 10, ImVec2(0, 0), ImPlotTextFlags_Vertical);
-                    }
-                    ImPlot::EndPlot();
-                }
+               
                 //Gamma
-                ImGui::TableSetColumnIndex(1);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
-                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(0, 0), plot_flags)) {
+                ImGui::TableSetColumnIndex(0);
+
+                if (ImPlot::BeginPlot("##Gamma_Plot", ImVec2(table_width, -1), plot_flags)) {
                     ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::PlotShaded("##Gamma", x, y, rand_data_count, 0, ImPlotShadedFlags_Vertical);
@@ -532,10 +549,9 @@ int main(int, char**)
 
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
 
                 //Depth
-                ImGui::TableSetColumnIndex(2);
+             /*   ImGui::TableSetColumnIndex(2);
                 int depth_start = 7050;
                 char buffer[6];
                 for (int i = 0; i < 30; i++) {
@@ -543,13 +559,11 @@ int main(int, char**)
                     ImGui::Dummy(ImVec2(0.0f, 12.0f));
                     depth_start += 50;
 
-                }
+                }*/
 
                 //Resist
-                ImGui::TableSetColumnIndex(3);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
-                if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(0, 0))) {
+                ImGui::TableSetColumnIndex(2);
+                if (ImPlot::BeginPlot("##Resist_Plot", ImVec2(table_width, -1))) {
                     ImPlot::SetupAxes("X", "Y", x_axis, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis| ImPlotAxisFlags_AuxDefault);
                     ImPlot::PlotShaded("##Resist_resmed", resist_resmed, resist_y, rand_data_count, 1200, ImPlotShadedFlags_Vertical);
@@ -559,13 +573,10 @@ int main(int, char**)
                     ImPlot::PlotLine("##Resist_resdeep", resist_resdeep, resist_y, rand_data_count);
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
 
                 //Neutron
-                ImGui::TableSetColumnIndex(4);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
-                if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(0, 0))) {
+                ImGui::TableSetColumnIndex(3);
+                if (ImPlot::BeginPlot("##Test_Neutron", ImVec2(table_width, -1))) {
                     ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                     ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
                     ImPlot::SetNextLineStyle(color_blue);
@@ -576,13 +587,10 @@ int main(int, char**)
                     ImPlot::PlotLine("##Neutron_pe", neutron_pe, neutron_y, rand_data_count);
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
 
                 //Toc
-                ImGui::TableSetColumnIndex(5);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(130, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(130, 1000));
-                if (ImPlot::BeginPlot("##Toc_Plot", ImVec2(0, 0))) {
+                ImGui::TableSetColumnIndex(4);
+                if (ImPlot::BeginPlot("##Toc_Plot", ImVec2(table_width, -1))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
@@ -593,15 +601,13 @@ int main(int, char**)
 
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
-                ImGui::TableSetColumnIndex(6);
+                ImGui::TableSetColumnIndex(5);
                 //POROSITY SATURATION
                 if (ImGui::BeginTable("POROSITY SATURATION", 2, ImGuiTableFlags_Resizable  | ImGuiTableFlags_SizingFixedFit)) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
-                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(200, 1000));
-                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(200, 1000));
-                    if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(0, 0))) {
+
+                    if (ImPlot::BeginPlot("##MINERALOGOY", ImVec2(table_width , -1))) {
                         // Set opactity of shade to 25%
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.85f);
                         ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
@@ -632,17 +638,15 @@ int main(int, char**)
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
-                    ImPlot::PopStyleVar(2);
                     ImGui::TableSetColumnIndex(1);
-                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(150, 1000));
-                    ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(150, 1000));
-                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(0, 0))) {
+
+                    if (ImPlot::BeginPlot("##POROSITY SATURATION1", ImVec2(table_width, -1))) {
                         // Set opactity of shade to 25%
 
                         ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                         ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
                         ImPlot::SetupAxis(ImAxis_Y2, NULL, y_axis | ImPlotAxisFlags_AuxDefault);
-                        ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000);
+                        ImPlot::SetupAxisLimits(ImAxis_X1, 0, -1);
                         ImPlot::SetNextFillStyle(minaralogoy_color[BVWI]);
 
                         ImPlot::PlotShaded("##plot5_1", data_col6_x[0], data_col6_y[0], rand_data_count, 0, ImPlotShadedFlags_Vertical);
@@ -660,15 +664,13 @@ int main(int, char**)
                         ImPlot::PopStyleVar();
                         ImPlot::EndPlot();
                     }
-                    ImPlot::PopStyleVar(2);
                     ImGui::EndTable();
                 }
                
-                ImGui::TableSetColumnIndex(7);
+                ImGui::TableSetColumnIndex(6);
                 //POROSITY SATURATION2
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
-                if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(0, 0))) {
+
+                if (ImPlot::BeginPlot("##POROSITY SATURATION2", ImVec2(table_width, -1))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert, y_axis);
@@ -683,9 +685,9 @@ int main(int, char**)
                     ImPlot::EndPlot();
                 }
 
-                ImGui::TableSetColumnIndex(8);
+                ImGui::TableSetColumnIndex(7);
                 
-                if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(0, 0))) {
+                if (ImPlot::BeginPlot("##OIL IN PLACE", ImVec2(table_width, -1))) {
                     // Set opactity of shade to 25%
                     ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
                     ImPlot::SetupAxes("X", "Y", x_axis | ImPlotAxisFlags_Invert | ImPlotAxisFlags_LockMax, y_axis);
@@ -717,30 +719,28 @@ int main(int, char**)
                     ImPlot::PopStyleVar();
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
                 //Electrofacies
 
-                ImGui::TableSetColumnIndex(9);
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotDefaultSize, ImVec2(180, 1000));
-                ImPlot::PushStyleVar(ImPlotStyleVar_PlotMinSize, ImVec2(180, 1000));
+                ImGui::TableSetColumnIndex(8);
+
                 static ImPlotColormap map = ImPlotColormap_Spectral;
                 static ImPlotHeatmapFlags hm_flags = 0;
                 static ImPlotAxisFlags axes_flags = ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks;
                 ImPlot::PushColormap(map);
 
-                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(0, 0), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
+                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(table_width, -1), ImPlotFlags_NoLegend | ImPlotFlags_NoMouseText)) {
                     ImPlot::SetupAxes(NULL, NULL, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels, axes_flags | ImPlotAxisFlags_Opposite | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_AutoFit);
 
                     ImPlot::PlotHeatmap("heat", heat_map_values_col8, rand_data_count, 1, scale_min, scale_max, "", ImPlotPoint(0, 0), ImPlotPoint(1, 1), hm_flags);
                     ImPlot::EndPlot();
                 }
-                ImPlot::PopStyleVar(2);
 
                 // Pop global styling
                 ImPlot::PopStyleColor();
                 ImPlot::PopStyleVar(2);
                 ImGui::EndTable();
             }
+            longCrossHairCursor();
             ImGui::End();
         }
 
