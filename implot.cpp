@@ -1,4 +1,4 @@
-// MIT License
+﻿// MIT License
 
 // Copyright (c) 2022 Evan Pezent
 
@@ -1975,8 +1975,14 @@ bool UpdateInput(ImPlotPlot& plot) {
             const bool equal_locked = equal_zoom && y_axis.OrthoAxis->IsInputLocked();
             if (y_hov[i] && !y_axis.IsInputLocked() && !equal_locked) {
                 float correction = (plot.Hovered && equal_zoom) ? 0.5f : 1.0f;
-                const double plot_t = y_axis.PixelsToPlot(plot.PlotRect.Min.y - rect_size.y * ty * zoom_rate * correction);
-                const double plot_b = y_axis.PixelsToPlot(plot.PlotRect.Max.y + rect_size.y * (1 - ty) * zoom_rate * correction);
+                // thêm tính năng ở đây
+                const double plot_t = ImHasFlag(plot.Flags, ImPlotFlags_WheelUnchangedRange) ?
+                    y_axis.PixelsToPlot(plot.PlotRect.Min.y + rect_size.y * ty * zoom_rate * correction)
+                    : y_axis.PixelsToPlot(plot.PlotRect.Min.y - rect_size.y * ty * zoom_rate * correction);
+                const double plot_b =
+                    ImHasFlag(plot.Flags, ImPlotFlags_WheelUnchangedRange) ?
+                    y_axis.PixelsToPlot(plot.PlotRect.Max.y + rect_size.y * ( ty) * zoom_rate * correction)
+                    : y_axis.PixelsToPlot(plot.PlotRect.Max.y + rect_size.y * (1 - ty) * zoom_rate * correction);
                 y_axis.SetMin(y_axis.IsInverted() ? plot_t : plot_b);
                 y_axis.SetMax(y_axis.IsInverted() ? plot_b : plot_t);
                 if (axis_equal && y_axis.OrthoAxis != NULL)
@@ -2393,7 +2399,7 @@ bool BeginPlot(const char* title_id, const ImVec2& size, ImPlotFlags flags) {
     // clear text buffers
     plot.ClearTextBuffer();
     plot.SetTitle(title_id);
-
+    
     // set frame size
     ImVec2 frame_size;
     if (gp.CurrentSubplot != NULL)
@@ -2408,11 +2414,12 @@ bool BeginPlot(const char* title_id, const ImVec2& size, ImPlotFlags flags) {
 
     plot.FrameRect = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + frame_size);
     ImGui::ItemSize(plot.FrameRect);
-    if (!ImGui::ItemAdd(plot.FrameRect, plot.ID, &plot.FrameRect) && !gp.CurrentSubplot) {
-        ResetCtxForNextPlot(GImPlot);
-        return false;
-    }
 
+        if (!ImGui::ItemAdd(plot.FrameRect, plot.ID, &plot.FrameRect) && !gp.CurrentSubplot) {
+            ResetCtxForNextPlot(GImPlot);
+            return false;
+        }
+    
     // setup items (or dont)
     if (gp.CurrentItems == NULL)
         gp.CurrentItems = &plot.Items;
@@ -2481,8 +2488,8 @@ void SetupFinish() {
     }
 
     // canvas/axes bb
-    plot.CanvasRect = ImRect(plot.FrameRect.Min + gp.Style.PlotPadding, plot.FrameRect.Max - gp.Style.PlotPadding);
-    plot.AxesRect   = plot.FrameRect;
+    plot.CanvasRect = !ImHasFlag(plot.Flags, ImPlotFlags_test) ? ImRect(plot.FrameRect.Min + gp.Style.PlotPadding, plot.FrameRect.Max - gp.Style.PlotPadding): ImRect(plot.FrameRect.Min , ImVec2(0, plot.FrameRect.Max.y));
+    plot.AxesRect   = !ImHasFlag(plot.Flags, ImPlotFlags_test)? plot.FrameRect : ImRect(plot.FrameRect.Min + gp.Style.PlotPadding, plot.FrameRect.Max - gp.Style.PlotPadding);
 
     // outside legend adjustments
     if (!ImHasFlag(plot.Flags, ImPlotFlags_NoLegend) && plot.Items.GetLegendCount() > 0 && ImHasFlag(plot.Items.Legend.Flags, ImPlotLegendFlags_Outside)) {
@@ -2592,9 +2599,9 @@ void SetupFinish() {
     }
 
     // INPUT ------------------------------------------------------------------
-    if (!ImHasFlag(plot.Flags, ImPlotFlags_NoInputs))
+    if (!ImHasFlag(plot.Flags, ImPlotFlags_NoInputs)) {
         UpdateInput(plot);
-
+    }
     // fit from FitNextPlotAxes or auto fit
     for (int i = 0; i < ImAxis_COUNT; ++i) {
         if (gp.NextPlotData.Fit[i] || plot.Axes[i].IsAutoFitting()) {

@@ -1116,7 +1116,7 @@ bool ImGui::Checkbox(const char* label, bool* v)
     const ImGuiID id = window->GetID(label);
     const ImVec2 label_size = CalcTextSize(label, NULL, true);
 
-    const float square_sz = GetFrameHeight();
+    const float square_sz = GetFrameHeight()-3.0f;
     const ImVec2 pos = window->DC.CursorPos;
     const ImRect total_bb(pos, pos + ImVec2(square_sz + (label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f), label_size.y + style.FramePadding.y * 2.0f));
     ItemSize(total_bb, style.FramePadding.y);
@@ -1403,8 +1403,8 @@ void ImGui::SeparatorEx(ImGuiSeparatorFlags flags)
     ImGuiContext& g = *GImGui;
     IM_ASSERT(ImIsPowerOfTwo(flags & (ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_Vertical)));   // Check that only 1 option is selected
 
-    float thickness_draw = 1.0f;
-    float thickness_layout = 0.0f;
+    float thickness_draw = 3.0f;
+    float thickness_layout = 2.0f;
     if (flags & ImGuiSeparatorFlags_Vertical)
     {
         // Vertical separator, for menu bars (use current line height). Not exposed because it is misleading and it doesn't have an effect on regular layout.
@@ -2439,7 +2439,10 @@ bool ImGui::DragScalarN(const char* label, ImGuiDataType data_type, void* p_data
     EndGroup();
     return value_changed;
 }
-
+bool ImGui::DragDouble(const char* label, double* v, double v_speed, double v_min, double v_max, const char* format, ImGuiSliderFlags flags)
+{
+    return DragScalar(label, ImGuiDataType_Double, v, v_speed, &v_min, &v_max, format, flags);
+}
 bool ImGui::DragFloat(const char* label, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     return DragScalar(label, ImGuiDataType_Float, v, v_speed, &v_min, &v_max, format, flags);
