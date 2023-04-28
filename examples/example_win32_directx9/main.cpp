@@ -8,10 +8,11 @@
 #include <tchar.h>
 #include "config.h"
 #include <filesystem>
-
 #include "Table.h"
+#include <fstream>
 #include <imgui_internal.h>
 #include <implot_internal.h>
+#include <string>
 double min_y = 0;
 double max_y = 200;
 double tagvaue = 0;
@@ -502,7 +503,8 @@ int main(int, char**)
         }
         if (done)
             break;
-
+        ImGuiIO& io = ImGui::GetIO();
+        //ImGui::LoadIniSettingsFromDisk(io.IniFilename);
         // Start the Dear ImGui frame
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -537,88 +539,69 @@ int main(int, char**)
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
+            static bool toggle = false;
+            ImGui::ToggleButton("test", &toggle);
+            ImGuiSettingsHandler* handler = ImGui::FindSettingsHandler("GR");
+            ImGui::Text("%s", io.IniFilename);
+            FILE* fp;
+            std::ifstream file(io.IniFilename);
+            if (!file.is_open()) {
+                std::cout << "File not found!" << std::endl;
+                return -1; // return error code
+            }
+
+   
+
+            std::string line;
+            while (getline(file, line)) {
+                ImGui::Text("%s", line.c_str());
+            }
+
+            file.close();
+            
+//            ImGui::Text("%s", (char*)handler->UserData);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
         // 3. Show another simple window.
-
-        const ImGuiViewport* vp = ImGui::GetMainViewport();
-        ImGui::SetNextWindowSize(vp->WorkSize);
-        ImGui::SetNextWindowPos(vp->WorkPos);
-        ImGuiTabItemFlags flags=0;
-       
-        ImGui::SetNextItemOpen(j == 1);
-        if (ImGui::TreeNode("test1")) {
-            i = 1;
-            ImGui::Text("test1");
-            ImGui::TreePop();
-        }
-        ImGui::SetNextItemOpen(j == 2);
-        if (ImGui::TreeNode("test2")) {
-            i = 2;
-            ImGui::Text("test2");
-            ImGui::TreePop();
-        }
-        ImGui::SetNextItemOpen(j == 3);
-        if (ImGui::TreeNode("test3")) {
-            i = 3;
-            ImGui::Text("test3");
-            ImGui::TreePop();
-        }
         
-        ImGui::SetNextItemOpen(j == 4);
-        if (ImGui::TreeNode("test4")) {
-            i = 4;
-            ImGui::Text("test4");
-            printf("%d", i);
-            ImGui::TreePop();
+
+        ImGuiTabItemFlags flags = 0;
+        static int focus_object;
+        ImGui::BeginChild("DND_LEFT",
+            ImVec2(ImGui::GetContentRegionAvail().x, 250.0f), false,
+            ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
+
+        char* object_types[4] = { "Markers", "Wells", "Horizon", "Seismic" };
+        // Left
+        ImGui::BeginChild("left pane", ImVec2(250, 250.0), true,
+            ImGuiWindowFlags_HorizontalScrollbar);
+        static bool showDialog = false;
+        static bool beginMenu[4]{ false,false,false,false };
+        for (int i = 0; i < sizeof(object_types) / sizeof(const char*); i++) {
+            ImGuiSelectableFlags flags = ImGuiSelectableFlags_None;
+            char label[128];
+            sprintf(label, " %s", object_types[i]);
+            if (ImGui::Selectable(label, focus_object == i, flags))
+                focus_object = i;
+            if ((beginMenu[i]=ImGui::IsItemHovered() && ImGui::IsItemClicked(1))) {
+                ImGui::OpenPopup(object_types[i]);
+
+            }
+
+
+            if (ImGui::BeginPopup(object_types[i])) {
+                if (ImGui::Selectable((std::string("Show ") + object_types[i] + " manager").c_str(), false, 0, ImVec2(0, 0))) {
+                    ImGui::Text("test");
+                }
+                ImGui::EndPopup();
+            }
         }
-
-
-        if (ImGui::BeginTabBar("testtab")) {
-            
-            if (i == 1) {
-                flags = ImGuiTabItemFlags_SetSelected;
-            }
-            if (ImGui::BeginTabItem("tes1", NULL, flags)) {
-                j = 1;
-                ImGui::Text("test1");
-                ImGui::EndTabItem();
-            }
-            flags = 0;
-            if (i == 2) {
-                flags = ImGuiTabItemFlags_SetSelected;
-            }
-            if (ImGui::BeginTabItem("tes2",NULL , flags)) {
-                j = 2;
-                ImGui::Text("test2");
-                ImGui::EndTabItem();
-            }
-            flags = 0;
-            if (i == 3) {
-                flags = ImGuiTabItemFlags_SetSelected;
-            }
-            if (ImGui::BeginTabItem("tes3",NULL, flags)) {
-                j = 3;
-                ImGui::Text("test3");
-                ImGui::EndTabItem();
-            }
-            flags = 0;
-            
-            if (i == 4) {
-
-                flags = ImGuiTabItemFlags_SetSelected;
-            }
-            if (ImGui::BeginTabItem("tes4", NULL, flags)) {
-                j = 4;
-                ImGui::Text("test4");
-                printf("\n%d", i);
-                ImGui::EndTabItem();
-            }
-            
-            ImGui::EndTabBar();
-        }
+        ImGui::EndChild();
+        ImGui::EndChild();
+       
+       
         if (my_table) {
             ImGui::Begin("My Table", &my_table);
             static ImPlotRect* testrect = new ImPlotRect(0, 1, 0, 2000);
